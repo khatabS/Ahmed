@@ -74,7 +74,7 @@
                     <i class="fas fa-building-columns fa-3x"></i>
                 </div>
                 <h3 class="fw-bold mb-3">تسجيل الدخول للنظام</h3>
-                <p class="text-muted small mb-3">النظام متصل بقاعدة بيانات سحابية ومحلية</p>
+                <p class="text-muted small mb-3">متزامن بالكامل عبر Google Drive</p>
                 
                 <div class="mb-3 text-start">
                     <label class="form-label">اسم المستخدم</label>
@@ -90,13 +90,13 @@
         </div>
     </div>
 
-    <!-- 2. الصفحة الرئيسية (الخيارات) -->
+    <!-- 2. الصفحة الرئيسية -->
     <div id="mainPage" class="page">
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
             <div class="container">
                 <span class="navbar-brand"><i class="fas fa-hard-hat me-2"></i>منصة المقاولات والديكور</span>
                 <div class="d-flex align-items-center gap-3">
-                    <span id="syncStatus" class="text-info"><i class="fas fa-sync fa-spin me-1"></i> متصل بالسحابة</span>
+                    <span id="syncStatus" class="text-info"><i class="fas fa-sync fa-spin me-1"></i> جاري الاتصال بالسحابة...</span>
                     <button class="btn btn-outline-light btn-sm" onclick="showPage('loginPage')"><i class="fas fa-sign-out-alt me-1"></i> خروج</button>
                 </div>
             </div>
@@ -130,7 +130,7 @@
         </nav>
         <div class="container">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h4>قائمة المشاريع الحالية</h4>
+                <h4>قائمة المشاريع السحابية</h4>
                 <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#newProjectModal">
                     <i class="fas fa-plus me-1"></i> إضافة مشروع جديد
                 </button>
@@ -139,7 +139,7 @@
         </div>
     </div>
 
-    <!-- 4. تفاصيل المشروع ومواد البناء -->
+    <!-- 4. تفاصيل المشروع -->
     <div id="projectDetailsPage" class="page">
         <nav class="navbar navbar-dark bg-secondary mb-4">
             <div class="container">
@@ -193,7 +193,7 @@
         </div>
     </div>
 
-    <!-- 5. قسم أعمال الديكور -->
+    <!-- 5. قسم الديكور -->
     <div id="decorPage" class="page">
         <nav class="navbar navbar-dark bg-warning text-dark mb-4">
             <div class="container">
@@ -299,7 +299,7 @@
                         <label class="form-label">القيمة الإجمالية للمشروع</label>
                         <input type="number" class="form-control" id="pTotal">
                     </div>
-                    <button type="button" class="btn btn-primary w-100" onclick="addNewProject()">حفظ المشروع</button>
+                    <button type="button" class="btn btn-primary w-100" onclick="addNewProject()">حفظ المشروع سحابياً</button>
                 </div>
             </div>
         </div>
@@ -325,7 +325,7 @@
                         <label class="form-label">تاريخ الشراء</label>
                         <input type="date" class="form-control" id="mDate">
                     </div>
-                    <button type="button" class="btn btn-success w-100" onclick="addNewMaterial()">حفظ المادة</button>
+                    <button type="button" class="btn btn-success w-100" onclick="addNewMaterial()">حفظ المادة سحابياً</button>
                 </div>
             </div>
         </div>
@@ -336,11 +336,10 @@
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw4ylt5kzWd6M-DK6xOUcXCUQTDfz2np26Fpr1e4DmlrbT0IBOTkYNjbpTYfMCI07fZ/exec";
         
-        // جلب البيانات من الذاكرة المحلية أولاً لضمان عدم ضياعها، ثم محاولة المزامنة مع جوجل درايف
-        let projects = JSON.parse(localStorage.getItem('contracting_projects')) || [];
+        let projects = [];
         let activeProjectId = null;
 
-        // تحميل البيانات من جوجل درايف عند تشغيل الصفحة
+        // جلب البيانات فور فتح الموقع
         window.onload = function() {
             loadProjectsFromDrive();
         };
@@ -348,43 +347,40 @@
         function showPage(pageId) {
             document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
             document.getElementById(pageId).classList.add('active');
-            if(pageId === 'contractingPage') {
-                renderProjects();
+            if(pageId === 'contractingPage' || pageId === 'mainPage') {
+                loadProjectsFromDrive();
             }
         }
 
         function forceLogin() {
             showPage('mainPage');
-            loadProjectsFromDrive();
         }
 
         function loadProjectsFromDrive() {
             const statusEl = document.getElementById('syncStatus');
-            statusEl.innerHTML = '<i class="fas fa-sync fa-spin me-1"></i> جاري المزامنة...';
+            if(statusEl) statusEl.innerHTML = '<i class="fas fa-sync fa-spin me-1"></i> جاري المزامنة...';
             
             fetch(SCRIPT_URL)
                 .then(response => response.json())
                 .then(data => {
-                    if(Array.isArray(data) && data.length > 0) {
+                    if(Array.isArray(data)) {
                         projects = data;
-                        saveLocalData(); // تحديث النسخة المحلية
+                    } else {
+                        projects = [];
                     }
                     renderProjects();
-                    statusEl.innerHTML = '<i class="fas fa-check-circle me-1"></i> متصل بالسحابة';
+                    if(statusEl) statusEl.innerHTML = '<i class="fas fa-check-circle me-1"></i> متصل بالسحابة';
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    statusEl.innerHTML = '<i class="fas fa-check-circle me-1"></i> يعمل محلياً';
+                    if(statusEl) statusEl.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i> خطأ بالاتصال';
                     renderProjects();
                 });
         }
 
         function saveProjectsToDrive() {
-            saveLocalData(); // الحفظ الفوري محلياً أولاً لضمان عدم الفقدان
-            renderProjects();
-
             const statusEl = document.getElementById('syncStatus');
-            statusEl.innerHTML = '<i class="fas fa-sync fa-spin me-1"></i> جاري الحفظ...';
+            if(statusEl) statusEl.innerHTML = '<i class="fas fa-sync fa-spin me-1"></i> جاري الحفظ بالسحابة...';
 
             fetch(SCRIPT_URL, {
                 method: 'POST',
@@ -393,17 +389,16 @@
                 body: JSON.stringify(projects)
             })
             .then(() => {
-                statusEl.innerHTML = '<i class="fas fa-check-circle me-1"></i> تم الحفظ بالسحابة';
-                setTimeout(() => { statusEl.innerHTML = '<i class="fas fa-check-circle me-1"></i> متصل بالسحابة'; }, 2000);
+                if(statusEl) statusEl.innerHTML = '<i class="fas fa-check-circle me-1"></i> تم الحفظ بنجاح';
+                setTimeout(() => {
+                    if(statusEl) statusEl.innerHTML = '<i class="fas fa-check-circle me-1"></i> متصل بالسحابة';
+                }, 2000);
+                renderProjects();
             })
             .catch(error => {
                 console.error('Error:', error);
-                statusEl.innerHTML = '<i class="fas fa-check-circle me-1"></i> تم الحفظ محلياً';
+                if(statusEl) statusEl.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i> فشل الحفظ';
             });
-        }
-
-        function saveLocalData() {
-            localStorage.setItem('contracting_projects', JSON.stringify(projects));
         }
 
         function addNewProject() {
@@ -425,7 +420,7 @@
             if(!list) return;
             list.innerHTML = '';
             if(projects.length === 0) {
-                list.innerHTML = '<div class="text-center text-muted py-4">لا توجد مشاريع مضافة حتى الآن. اضغط على إضافة مشروع جديد.</div>';
+                list.innerHTML = '<div class="text-center text-muted py-4">لا توجد مشاريع سحابية مضافة حتى الآن.</div>';
                 return;
             }
             projects.forEach(p => {
