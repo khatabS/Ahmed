@@ -74,7 +74,7 @@
                     <i class="fas fa-building-columns fa-3x"></i>
                 </div>
                 <h3 class="fw-bold mb-3">تسجيل الدخول للنظام</h3>
-                <p class="text-muted small mb-3">النظام متصل بقاعدة بيانات Google Drive</p>
+                <p class="text-muted small mb-3">النظام متصل بقاعدة بيانات سحابية ومحلية</p>
                 
                 <div class="mb-3 text-start">
                     <label class="form-label">اسم المستخدم</label>
@@ -85,7 +85,6 @@
                     <input type="password" class="form-control" id="loginPassword" value="123">
                 </div>
                 
-                <!-- زر الدخول المباشر كمفتاح ربط سحري مضمون -->
                 <a href="javascript:void(0);" onclick="forceLogin()" class="btn btn-primary w-100 py-2 fw-bold text-decoration-none">تسجيل الدخول</a>
             </div>
         </div>
@@ -131,7 +130,7 @@
         </nav>
         <div class="container">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h4>قائمة المشاريع الحالية (محدثة من Google Drive)</h4>
+                <h4>قائمة المشاريع الحالية</h4>
                 <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#newProjectModal">
                     <i class="fas fa-plus me-1"></i> إضافة مشروع جديد
                 </button>
@@ -300,7 +299,7 @@
                         <label class="form-label">القيمة الإجمالية للمشروع</label>
                         <input type="number" class="form-control" id="pTotal">
                     </div>
-                    <button type="button" class="btn btn-primary w-100" onclick="addNewProject()">حفظ في Google Drive</button>
+                    <button type="button" class="btn btn-primary w-100" onclick="addNewProject()">حفظ المشروع</button>
                 </div>
             </div>
         </div>
@@ -326,7 +325,7 @@
                         <label class="form-label">تاريخ الشراء</label>
                         <input type="date" class="form-control" id="mDate">
                     </div>
-                    <button type="button" class="btn btn-success w-100" onclick="addNewMaterial()">حفظ وتحديث السحابة</button>
+                    <button type="button" class="btn btn-success w-100" onclick="addNewMaterial()">حفظ المادة</button>
                 </div>
             </div>
         </div>
@@ -337,19 +336,26 @@
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw4ylt5kzWd6M-DK6xOUcXCUQTDfz2np26Fpr1e4DmlrbT0IBOTkYNjbpTYfMCI07fZ/exec";
         
-        let projects = [];
+        // جلب البيانات من الذاكرة المحلية أولاً لضمان عدم ضياعها، ثم محاولة المزامنة مع جوجل درايف
+        let projects = JSON.parse(localStorage.getItem('contracting_projects')) || [];
         let activeProjectId = null;
+
+        // تحميل البيانات من جوجل درايف عند تشغيل الصفحة
+        window.onload = function() {
+            loadProjectsFromDrive();
+        };
 
         function showPage(pageId) {
             document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
             document.getElementById(pageId).classList.add('active');
             if(pageId === 'contractingPage') {
-                loadProjectsFromDrive();
+                renderProjects();
             }
         }
 
         function forceLogin() {
             showPage('mainPage');
+            loadProjectsFromDrive();
         }
 
         function loadProjectsFromDrive() {
@@ -359,22 +365,24 @@
             fetch(SCRIPT_URL)
                 .then(response => response.json())
                 .then(data => {
-                    if(Array.isArray(data)) {
+                    if(Array.isArray(data) && data.length > 0) {
                         projects = data;
-                    } else {
-                        projects = [];
+                        saveLocalData(); // تحديث النسخة المحلية
                     }
                     renderProjects();
                     statusEl.innerHTML = '<i class="fas fa-check-circle me-1"></i> متصل بالسحابة';
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    statusEl.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i> خطأ في المزامنة';
+                    statusEl.innerHTML = '<i class="fas fa-check-circle me-1"></i> يعمل محلياً';
                     renderProjects();
                 });
         }
 
         function saveProjectsToDrive() {
+            saveLocalData(); // الحفظ الفوري محلياً أولاً لضمان عدم الفقدان
+            renderProjects();
+
             const statusEl = document.getElementById('syncStatus');
             statusEl.innerHTML = '<i class="fas fa-sync fa-spin me-1"></i> جاري الحفظ...';
 
@@ -386,14 +394,16 @@
             })
             .then(() => {
                 statusEl.innerHTML = '<i class="fas fa-check-circle me-1"></i> تم الحفظ بالسحابة';
-                setTimeout(() => {
-                    statusEl.innerHTML = '<i class="fas fa-check-circle me-1"></i> متصل بالسحابة';
-                }, 2000);
+                setTimeout(() => { statusEl.innerHTML = '<i class="fas fa-check-circle me-1"></i> متصل بالسحابة'; }, 2000);
             })
             .catch(error => {
                 console.error('Error:', error);
-                statusEl.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i> فشل الحفظ';
+                statusEl.innerHTML = '<i class="fas fa-check-circle me-1"></i> تم الحفظ محلياً';
             });
+        }
+
+        function saveLocalData() {
+            localStorage.setItem('contracting_projects', JSON.stringify(projects));
         }
 
         function addNewProject() {
@@ -403,7 +413,6 @@
 
             projects.push({ id: Date.now(), name, total, materials: [] });
             saveProjectsToDrive();
-            renderProjects();
             
             const modalEl = document.getElementById('newProjectModal');
             bootstrap.Modal.getInstance(modalEl).hide();
@@ -413,6 +422,7 @@
 
         function renderProjects() {
             const list = document.getElementById('projectsList');
+            if(!list) return;
             list.innerHTML = '';
             if(projects.length === 0) {
                 list.innerHTML = '<div class="text-center text-muted py-4">لا توجد مشاريع مضافة حتى الآن. اضغط على إضافة مشروع جديد.</div>';
@@ -446,6 +456,7 @@
 
         function renderProjectStats() {
             const project = projects.find(p => p.id === activeProjectId);
+            if(!project) return;
             const totalExpenses = project.materials ? project.materials.reduce((sum, m) => sum + m.cost, 0) : 0;
             const remaining = project.total - totalExpenses;
 
