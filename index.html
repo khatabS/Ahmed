@@ -39,7 +39,7 @@
 <body>
 
     <!-- 1. صفحة تسجيل الدخول -->
-    <div id="loginPage" class="page active">
+    <div id="loginPage" class="page">
         <div class="container min-vh-100 d-flex align-items-center justify-content-center">
             <div class="card card-custom p-4 col-md-5 col-lg-4 text-center">
                 <div class="mb-3 text-primary"><i class="fas fa-building-columns fa-3x"></i></div>
@@ -55,7 +55,8 @@
                     <input type="password" class="form-control" id="loginPassword" value="123">
                 </div>
                 
-                <button type="button" onclick="forceLogin()" class="btn btn-primary w-100 py-2 fw-bold">تسجيل الدخول</button>
+                <!-- تم تحويله إلى رابط مباشر لضمان الانتقال الفوري 100% -->
+                <a href="javascript:void(0);" onclick="forceLogin()" class="btn btn-primary w-100 py-2 fw-bold text-decoration-none">تسجيل الدخول</a>
             </div>
         </div>
     </div>
@@ -234,32 +235,40 @@
         let projects = [];
         let activeProjectId = null;
 
-        // التحقق الفوري البسيط والسريع جداً
-        document.addEventListener("DOMContentLoaded", function() {
-            if (localStorage.getItem('app_logged_in') === 'true') {
-                showPage('mainPage');
-            } else {
+        // التحقق السريع من حالة الجلسة دون تجميد الواجهة
+        window.onload = function() {
+            try {
+                if (localStorage.getItem('app_logged_in') === 'true') {
+                    showPage('mainPage');
+                } else {
+                    showPage('loginPage');
+                }
+            } catch(e) {
                 showPage('loginPage');
             }
-        });
+        };
 
         function showPage(pageId) {
             document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
             const target = document.getElementById(pageId);
             if(target) target.classList.add('active');
             
-            if(pageId === 'contractingPage') {
+            if(pageId === 'contractingPage' || pageId === 'mainPage') {
                 loadProjectsFromDrive();
             }
         }
 
         function forceLogin() {
-            localStorage.setItem('app_logged_in', 'true');
+            try {
+                localStorage.setItem('app_logged_in', 'true');
+            } catch(e) {}
             showPage('mainPage');
         }
 
         function logout() {
-            localStorage.removeItem('app_logged_in');
+            try {
+                localStorage.removeItem('app_logged_in');
+            } catch(e) {}
             showPage('loginPage');
         }
 
@@ -365,4 +374,126 @@
             if(!list) return;
             list.innerHTML = '';
             if(projects.length === 0) {
-                list.innerHTML = '<div class="text-center text-muted
+                list.innerHTML = '<div class="text-center text-muted py-4">لا توجد مشاريع سحابية مضافة حتى الآن.</div>';
+                return;
+            }
+            projects.forEach(p => {
+                const totalExpenses = p.materials ? p.materials.reduce((sum, m) => sum + m.cost, 0) : 0;
+                const remaining = p.total - totalExpenses;
+                list.innerHTML += `
+                    <div class="col-md-4 mb-3">
+                        <div class="card card-custom p-3 shadow-sm">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="fw-bold text-primary mb-0">${p.name}</h5>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="fas fa-ellipsis-v"></i></button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="javascript:void(0);" onclick="editProject(${p.id})"><i class="fas fa-edit text-warning me-2"></i>تعديل</a></li>
+                                        <li><a class="dropdown-item" href="javascript:void(0);" onclick="deleteProject(${p.id})"><i class="fas fa-trash text-danger me-2"></i>حذف</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <hr>
+                            <p class="text-muted mb-1">الإجمالي: ${p.total} OMR</p>
+                            <p class="text-danger mb-1">المصروفات: ${totalExpenses} OMR</p>
+                            <p class="text-success mb-3 fw-bold">المتبقي: ${remaining} OMR</p>
+                            <button class="btn btn-outline-primary btn-sm w-100" onclick="openProjectDetails(${p.id})">فتح وتفاصيل المواد</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function openProjectDetails(id) {
+            activeProjectId = id;
+            const project = projects.find(p => p.id === id);
+            document.getElementById('currentProjectTitle').innerText = `مشروع: ${project.name}`;
+            renderProjectStats();
+            showPage('projectDetailsPage');
+        }
+
+        function renderProjectStats() {
+            const project = projects.find(p => p.id === activeProjectId);
+            if(!project) return;
+            const totalExpenses = project.materials ? project.materials.reduce((sum, m) => sum + m.cost, 0) : 0;
+            const remaining = project.total - totalExpenses;
+
+            document.getElementById('projTotalCost').innerText = project.total + ' OMR';
+            document.getElementById('projTotalExpenses').innerText = totalExpenses + ' OMR';
+            document.getElementById('projRemainingCost').innerText = remaining + ' OMR';
+
+            const table = document.getElementById('materialsTableBody');
+            table.innerHTML = '';
+            if(!project.materials) project.materials = [];
+            project.materials.forEach((m, idx) => {
+                table.innerHTML += `
+                    <tr>
+                        <td>${idx + 1}</td>
+                        <td>${m.name}</td>
+                        <td>${m.cost} OMR</td>
+                        <td>${m.date}</td>
+                        <td><button class="btn btn-danger btn-sm" onclick="deleteMaterial(${m.id})">حذف</button></td>
+                    </tr>
+                `;
+            });
+        }
+
+        function addNewMaterial() {
+            const name = document.getElementById('mName').value;
+            const cost = parseFloat(document.getElementById('mCost').value);
+            const date = document.getElementById('mDate').value;
+            if(!name || isNaN(cost) || !date) { alert('يرجى تعبئة كافة بيانات المادة'); return; }
+
+            const project = projects.find(p => p.id === activeProjectId);
+            if(!project.materials) project.materials = [];
+            project.materials.push({ id: Date.now(), name, cost, date });
+            
+            saveProjectsToDrive();
+            renderProjectStats();
+
+            const modalEl = document.getElementById('addMaterialModal');
+            const instance = bootstrap.Modal.getInstance(modalEl);
+            if(instance) instance.hide();
+            document.getElementById('mName').value = '';
+            document.getElementById('mCost').value = '';
+            document.getElementById('mDate').value = '';
+        }
+
+        function deleteMaterial(mId) {
+            const project = projects.find(p => p.id === activeProjectId);
+            project.materials = project.materials.filter(m => m.id !== mId);
+            saveProjectsToDrive();
+            renderProjectStats();
+        }
+
+        function generateDecorInvoice() {
+            const clientName = document.getElementById('decClientName').value || '-';
+            const workType = document.getElementById('decWorkType').value || '-';
+            const total = parseFloat(document.getElementById('decTotal').value) || 0;
+            const paid = parseFloat(document.getElementById('decPaid').value) || 0;
+            const notes = document.getElementById('decNotes').value || '-';
+
+            document.getElementById('viewClientName').innerText = clientName;
+            document.getElementById('viewWorkType').innerText = workType;
+            document.getElementById('viewTotal').innerText = total + ' OMR';
+            document.getElementById('viewPaid').innerText = paid + ' OMR';
+            document.getElementById('viewRemaining').innerText = (total - paid) + ' OMR';
+            document.getElementById('viewNotes').innerText = notes;
+            document.getElementById('viewDate').innerText = new Date().toLocaleDateString('ar-EG');
+        }
+
+        function sendWhatsApp() {
+            const phone = document.getElementById('decClientPhone').value;
+            if(!phone) { alert('يرجى إدخال رقم الهاتف أولاً'); return; }
+            const clientName = document.getElementById('decClientName').value;
+            const workType = document.getElementById('decWorkType').value;
+            const total = document.getElementById('decTotal').value;
+            const paid = document.getElementById('decPaid').value;
+            const remaining = total - paid;
+
+            const msg = `مرحباً بك ${clientName}، تفاصيل معاملة الديكور الخاصة بك:\n\n- نوع العمل: ${workType}\n- الإجمالي: ${total} OMR\n- المدفوع: ${paid} OMR\n- المتبقي: ${remaining} OMR\n\nشكراً لتعاملك معنا!`;
+            window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+        }
+    </script>
+</body>
+</html>
