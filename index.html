@@ -16,46 +16,18 @@
             background-color: #f4f6f9;
             color: #333;
         }
-        .page {
-            display: none;
-        }
-        .page.active {
-            display: block;
-        }
-        .card-custom {
-            border: none;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        }
+        .page { display: none; }
+        .page.active { display: block; }
+        .card-custom { border: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         .section-btn {
-            height: 180px;
-            font-size: 1.5rem;
-            font-weight: bold;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            border-radius: 15px;
-            text-decoration: none;
-            color: white;
-            transition: all 0.3s;
-            cursor: pointer;
+            height: 180px; font-size: 1.5rem; font-weight: bold;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            border-radius: 15px; text-decoration: none; color: white; transition: all 0.3s; cursor: pointer;
         }
-        .bg-contracting {
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-        }
-        .bg-decor {
-            background: linear-gradient(135deg, #d4a373 0%, #a98467 100%);
-        }
-        .printable-invoice {
-            background: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        #syncStatus {
-            font-size: 0.85rem;
-        }
+        .bg-contracting { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); }
+        .bg-decor { background: linear-gradient(135deg, #d4a373 0%, #a98467 100%); }
+        .printable-invoice { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        #syncStatus { font-size: 0.85rem; }
         @media print {
             body * { visibility: hidden; }
             #printableArea, #printableArea * { visibility: visible; }
@@ -70,11 +42,9 @@
     <div id="loginPage" class="page active">
         <div class="container min-vh-100 d-flex align-items-center justify-content-center">
             <div class="card card-custom p-4 col-md-5 col-lg-4 text-center">
-                <div class="mb-3 text-primary">
-                    <i class="fas fa-building-columns fa-3x"></i>
-                </div>
+                <div class="mb-3 text-primary"><i class="fas fa-building-columns fa-3x"></i></div>
                 <h3 class="fw-bold mb-3">تسجيل الدخول للنظام</h3>
-                <p class="text-muted small mb-3">متزامن بالكامل عبر Google Drive</p>
+                <p class="text-muted small mb-3">مزامنة سحابية حية عبر Google Drive</p>
                 
                 <div class="mb-3 text-start">
                     <label class="form-label">اسم المستخدم</label>
@@ -96,7 +66,7 @@
             <div class="container">
                 <span class="navbar-brand"><i class="fas fa-hard-hat me-2"></i>منصة المقاولات والديكور</span>
                 <div class="d-flex align-items-center gap-3">
-                    <span id="syncStatus" class="text-info"><i class="fas fa-sync fa-spin me-1"></i> جاري الاتصال بالسحابة...</span>
+                    <span id="syncStatus" class="text-info"><i class="fas fa-sync fa-spin me-1"></i> جاري المزامنة...</span>
                     <button class="btn btn-outline-light btn-sm" onclick="showPage('loginPage')"><i class="fas fa-sign-out-alt me-1"></i> خروج</button>
                 </div>
             </div>
@@ -106,14 +76,12 @@
             <div class="row g-4 justify-content-center">
                 <div class="col-md-5">
                     <div class="section-btn bg-contracting shadow" onclick="showPage('contractingPage')">
-                        <i class="fas fa-city fa-2x mb-3"></i>
-                        مقاولات البناء
+                        <i class="fas fa-city fa-2x mb-3"></i> مقاولات البناء
                     </div>
                 </div>
                 <div class="col-md-5">
                     <div class="section-btn bg-decor shadow" onclick="showPage('decorPage')">
-                        <i class="fas fa-paint-roller fa-2x mb-3"></i>
-                        أعمال الديكور
+                        <i class="fas fa-paint-roller fa-2x mb-3"></i> أعمال الديكور
                     </div>
                 </div>
             </div>
@@ -131,9 +99,10 @@
         <div class="container">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h4>قائمة المشاريع السحابية</h4>
-                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#newProjectModal">
-                    <i class="fas fa-plus me-1"></i> إضافة مشروع جديد
-                </button>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-primary btn-sm" onclick="loadProjectsFromDrive()"><i class="fas fa-sync me-1"></i> تحديث</button>
+                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#newProjectModal"><i class="fas fa-plus me-1"></i> إضافة مشروع جديد</button>
+                </div>
             </div>
             <div class="row" id="projectsList"></div>
         </div>
@@ -149,43 +118,20 @@
         </nav>
         <div class="container">
             <div class="row mb-4">
-                <div class="col-md-4">
-                    <div class="card p-3 bg-primary text-white text-center">
-                        <h5>إجمالي قيمة المشروع</h5>
-                        <h3 id="projTotalCost">0</h3>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card p-3 bg-warning text-dark text-center">
-                        <h5>إجمالي المصروفات (المواد)</h5>
-                        <h3 id="projTotalExpenses">0</h3>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card p-3 bg-success text-white text-center">
-                        <h5>المبلغ المتبقي</h5>
-                        <h3 id="projRemainingCost">0</h3>
-                    </div>
-                </div>
+                <div class="col-md-4"><div class="card p-3 bg-primary text-white text-center"><h5>إجمالي قيمة المشروع</h5><h3 id="projTotalCost">0</h3></div></div>
+                <div class="col-md-4"><div class="card p-3 bg-warning text-dark text-center"><h5>إجمالي المصروفات</h5><h3 id="projTotalExpenses">0</h3></div></div>
+                <div class="col-md-4"><div class="card p-3 bg-success text-white text-center"><h5>المبلغ المتبقي</h5><h3 id="projRemainingCost">0</h3></div></div>
             </div>
 
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h5>مواد ومشتريات البناء</h5>
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addMaterialModal">
-                    <i class="fas fa-cart-plus me-1"></i> إضافة مادة جديدة
-                </button>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addMaterialModal"><i class="fas fa-cart-plus me-1"></i> إضافة مادة جديدة</button>
             </div>
 
             <div class="table-responsive bg-white p-3 rounded shadow-sm">
                 <table class="table table-hover">
                     <thead class="table-light">
-                        <tr>
-                            <th>#</th>
-                            <th>اسم المادة</th>
-                            <th>القيمة</th>
-                            <th>تاريخ الشراء</th>
-                            <th>إجراء</th>
-                        </tr>
+                        <tr><th>#</th><th>اسم المادة</th><th>القيمة</th><th>تاريخ الشراء</th><th>إجراء</th></tr>
                     </thead>
                     <tbody id="materialsTableBody"></tbody>
                 </table>
@@ -207,30 +153,12 @@
                     <div class="card card-custom p-4">
                         <h5 class="fw-bold mb-3">إدخال تفاصيل معاملة ديكور</h5>
                         <div>
-                            <div class="mb-2">
-                                <label class="form-label">اسم العميل</label>
-                                <input type="text" class="form-control" id="decClientName">
-                            </div>
-                            <div class="mb-2">
-                                <label class="form-label">رقم الهاتف (الواتساب)</label>
-                                <input type="text" class="form-control" id="decClientPhone" placeholder="مثال: 96899000000">
-                            </div>
-                            <div class="mb-2">
-                                <label class="form-label">نوع العمل / الخدمة</label>
-                                <input type="text" class="form-control" id="decWorkType" placeholder="تكسية جدران، جبس...">
-                            </div>
-                            <div class="mb-2">
-                                <label class="form-label">التكلفة الإجمالية</label>
-                                <input type="number" class="form-control" id="decTotal">
-                            </div>
-                            <div class="mb-2">
-                                <label class="form-label">المبلغ المدفوع (الدفعة المقدمة)</label>
-                                <input type="number" class="form-control" id="decPaid">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">ملاحظات وشروط</label>
-                                <textarea class="form-control" id="decNotes" rows="2"></textarea>
-                            </div>
+                            <div class="mb-2"><label class="form-label">اسم العميل</label><input type="text" class="form-control" id="decClientName"></div>
+                            <div class="mb-2"><label class="form-label">رقم الهاتف (الواتساب)</label><input type="text" class="form-control" id="decClientPhone" placeholder="96899000000"></div>
+                            <div class="mb-2"><label class="form-label">نوع العمل / الخدمة</label><input type="text" class="form-control" id="decWorkType" placeholder="تكسية جدران، جبس..."></div>
+                            <div class="mb-2"><label class="form-label">التكلفة الإجمالية</label><input type="number" class="form-control" id="decTotal"></div>
+                            <div class="mb-2"><label class="form-label">المبلغ المدفوع</label><input type="number" class="form-control" id="decPaid"></div>
+                            <div class="mb-3"><label class="form-label">ملاحظات وشروط</label><textarea class="form-control" id="decNotes" rows="2"></textarea></div>
                             <button type="button" class="btn btn-warning w-100 fw-bold" onclick="generateDecorInvoice()">تحديث المعاينة</button>
                         </div>
                     </div>
@@ -247,31 +175,15 @@
                             <div class="col-6 text-end"><strong>العميل:</strong> <span id="viewClientName">-</span></div>
                         </div>
                         <table class="table table-bordered my-3">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>الوصف</th>
-                                    <th>المبلغ</th>
-                                </tr>
-                            </thead>
+                            <thead class="table-light"><tr><th>الوصف</th><th>المبلغ</th></tr></thead>
                             <tbody>
-                                <tr>
-                                    <td id="viewWorkType">تفاصيل الخدمة...</td>
-                                    <td id="viewTotal">0 OMR</td>
-                                </tr>
-                                <tr>
-                                    <td>المدفوع (المقدم)</td>
-                                    <td id="viewPaid" class="text-success">0 OMR</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>المتبقي</strong></td>
-                                    <td id="viewRemaining" class="text-danger fw-bold">0 OMR</td>
-                                </tr>
+                                <tr><td id="viewWorkType">تفاصيل الخدمة...</td><td id="viewTotal">0 OMR</td></tr>
+                                <tr><td>المدفوع (المقدم)</td><td id="viewPaid" class="text-success">0 OMR</td></tr>
+                                <tr><td><strong>المتبقي</strong></td><td id="viewRemaining" class="text-danger fw-bold">0 OMR</td></tr>
                             </tbody>
                         </table>
                         <p><strong>ملاحظات:</strong> <span id="viewNotes">-</span></p>
-                        <div class="mt-4 pt-3 border-top text-center text-muted small">
-                            شكراً لتعاملكم معنا!
-                        </div>
+                        <div class="mt-4 pt-3 border-top text-center text-muted small">شكراً لتعاملكم معنا!</div>
                     </div>
                     <div class="mt-3 d-flex gap-2 no-print">
                         <button class="btn btn-success flex-fill" onclick="sendWhatsApp()"><i class="fab fa-whatsapp me-1"></i> إرسال عبر الواتساب</button>
@@ -286,19 +198,10 @@
     <div class="modal fade" id="newProjectModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">إضافة مشروع مقاولات جديد</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
+                <div class="modal-header"><h5 class="modal-title">إضافة مشروع مقاولات جديد</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
                 <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">اسم المشروع</label>
-                        <input type="text" class="form-control" id="pName">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">القيمة الإجمالية للمشروع</label>
-                        <input type="number" class="form-control" id="pTotal">
-                    </div>
+                    <div class="mb-3"><label class="form-label">اسم المشروع</label><input type="text" class="form-control" id="pName"></div>
+                    <div class="mb-3"><label class="form-label">القيمة الإجمالية للمشروع</label><input type="number" class="form-control" id="pTotal"></div>
                     <button type="button" class="btn btn-primary w-100" onclick="addNewProject()">حفظ المشروع سحابياً</button>
                 </div>
             </div>
@@ -308,23 +211,11 @@
     <div class="modal fade" id="addMaterialModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">إضافة مادة بناء جديدة</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
+                <div class="modal-header"><h5 class="modal-title">إضافة مادة بناء جديدة</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
                 <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">اسم المادة</label>
-                        <input type="text" class="form-control" id="mName">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">قيمة المادة</label>
-                        <input type="number" class="form-control" id="mCost">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">تاريخ الشراء</label>
-                        <input type="date" class="form-control" id="mDate">
-                    </div>
+                    <div class="mb-3"><label class="form-label">اسم المادة</label><input type="text" class="form-control" id="mName"></div>
+                    <div class="mb-3"><label class="form-label">قيمة المادة</label><input type="number" class="form-control" id="mCost"></div>
+                    <div class="mb-3"><label class="form-label">تاريخ الشراء</label><input type="date" class="form-control" id="mDate"></div>
                     <button type="button" class="btn btn-success w-100" onclick="addNewMaterial()">حفظ المادة سحابياً</button>
                 </div>
             </div>
@@ -339,7 +230,6 @@
         let projects = [];
         let activeProjectId = null;
 
-        // جلب البيانات فور فتح الموقع
         window.onload = function() {
             loadProjectsFromDrive();
         };
@@ -420,7 +310,7 @@
             if(!list) return;
             list.innerHTML = '';
             if(projects.length === 0) {
-                list.innerHTML = '<div class="text-center text-muted py-4">لا توجد مشاريع سحابية مضافة حتى الآن.</div>';
+                list.innerHTML = '<div class="text-center text-muted py-4">لا توجد مشاريع سحابية مضافة حتى الآن. اضغط على زر "تحديث" بالأعلى لجلب أحدث البيانات.</div>';
                 return;
             }
             projects.forEach(p => {
