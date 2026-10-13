@@ -26,6 +26,10 @@
             border: none;
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+        .card-custom:hover {
+            transform: translateY(-5px);
         }
         .section-btn {
             height: 180px;
@@ -54,10 +58,21 @@
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
         @media print {
-            body * { visibility: hidden; }
-            #printableArea, #printableArea * { visibility: visible; }
-            #printableArea { position: absolute; left: 0; top: 0; width: 100%; }
-            .no-print { display: none !important; }
+            body * {
+                visibility: hidden;
+            }
+            #printableArea, #printableArea * {
+                visibility: visible;
+            }
+            #printableArea {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+            }
+            .no-print {
+                display: none !important;
+            }
         }
     </style>
 </head>
@@ -71,33 +86,107 @@
                     <i class="fas fa-building-columns fa-3x"></i>
                 </div>
                 <h3 class="fw-bold mb-3">تسجيل الدخول للنظام</h3>
-                <p class="text-muted small mb-3">اضغط على زر الدخول للمتابعة مباشرة</p>
+                <p class="text-muted small mb-3">أدخل اسم المستخدم وكلمة المرور للمتابعة</p>
+                <div id="loginAlert" class="alert alert-danger d-none py-2 small"></div>
                 
-                <div class="mb-3 text-start">
-                    <label class="form-label">اسم المستخدم</label>
-                    <input type="text" class="form-control" id="loginUsername" value="admin">
-                </div>
-                <div class="mb-3 text-start">
-                    <label class="form-label">كلمة المرور</label>
-                    <input type="password" class="form-control" id="loginPassword" value="123">
-                </div>
-                
-                <!-- زر الدخول المباشر الذي لا يحتمل أي خطأ -->
-                <button class="btn btn-primary w-100 py-2 fw-bold" onclick="forceLogin()">تسجيل الدخول</button>
+                <form id="loginForm" onsubmit="handleLogin(event)">
+                    <div class="mb-3 text-start">
+                        <label class="form-label">اسم المستخدم</label>
+                        <input type="text" class="form-control" id="loginUsername" required placeholder="اسم المستخدم">
+                    </div>
+                    <div class="mb-3 text-start">
+                        <label class="form-label">كلمة المرور</label>
+                        <input type="password" class="form-control" id="loginPassword" required placeholder="كلمة المرور">
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">تسجيل الدخول</button>
+                </form>
 
-                <div class="mt-3 pt-3 border-top small">
-                    <a href="#" class="text-decoration-none text-primary" onclick="alert('النظام يدعم الدخول المباشر عبر زر تسجيل الدخول.')">إنشاء حساب / استعادة كلمة المرور</a>
+                <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top small">
+                    <a href="#" class="text-decoration-none text-primary" onclick="showPage('registerPage')"><i class="fas fa-user-plus me-1"></i> إنشاء حساب جديد</a>
+                    <a href="#" class="text-decoration-none text-secondary" onclick="showPage('forgotPage')"><i class="fas fa-key me-1"></i> نسيت كلمة المرور؟</a>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 2. الصفحة الرئيسية (الخيارات) -->
+    <!-- 2. صفحة تسجيل جديد -->
+    <div id="registerPage" class="page">
+        <div class="container min-vh-100 d-flex align-items-center justify-content-center">
+            <div class="card card-custom p-4 col-md-5 col-lg-4 text-center">
+                <div class="mb-3 text-success">
+                    <i class="fas fa-user-plus fa-3x"></i>
+                </div>
+                <h3 class="fw-bold mb-3">إنشاء حساب جديد</h3>
+                <p class="text-muted small mb-3">قم بتعبئة البيانات التالية لإنشاء مستخدم جديد</p>
+                <div id="regAlert" class="alert alert-danger d-none py-2 small"></div>
+                
+                <form id="registerForm" onsubmit="handleRegister(event)">
+                    <div class="mb-2 text-start">
+                        <label class="form-label">الاسم الكامل</label>
+                        <input type="text" class="form-control" id="regFullName" required placeholder="الاسم الثلاثي">
+                    </div>
+                    <div class="mb-2 text-start">
+                        <label class="form-label">رقم الهاتف</label>
+                        <input type="tel" class="form-control" id="regPhone" required placeholder="مثال: 96890000000">
+                    </div>
+                    <div class="mb-2 text-start">
+                        <label class="form-label">اسم المستخدم</label>
+                        <input type="text" class="form-control" id="regUsername" required placeholder="اسم المستخدم بالإنجليزية/العربية">
+                    </div>
+                    <div class="mb-3 text-start">
+                        <label class="form-label">كلمة المرور</label>
+                        <input type="password" class="form-control" id="regPassword" required placeholder="كلمة المرور">
+                    </div>
+                    <button type="submit" class="btn btn-success w-100 py-2 fw-bold">إنشاء الحساب والتسجيل</button>
+                </form>
+
+                <div class="mt-3 pt-2 border-top small">
+                    <span>لديك حساب بالفعل؟ </span>
+                    <a href="#" class="text-decoration-none fw-bold" onclick="showPage('loginPage')">تسجيل الدخول</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. صفحة نسيت كلمة المرور -->
+    <div id="forgotPage" class="page">
+        <div class="container min-vh-100 d-flex align-items-center justify-content-center">
+            <div class="card card-custom p-4 col-md-5 col-lg-4 text-center">
+                <div class="mb-3 text-warning">
+                    <i class="fas fa-unlock-alt fa-3x"></i>
+                </div>
+                <h3 class="fw-bold mb-3">استعادة كلمة المرور</h3>
+                <p class="text-muted small mb-3">أدخل اسم المستخدم أو رقم الهاتف لتعيين كلمة مرور جديدة</p>
+                <div id="forgotAlert" class="alert d-none py-2 small"></div>
+                
+                <form id="forgotForm" onsubmit="handleResetPassword(event)">
+                    <div class="mb-3 text-start">
+                        <label class="form-label">اسم المستخدم أو رقم الهاتف</label>
+                        <input type="text" class="form-control" id="resetAccount" required placeholder="أدخل اسم المستخدم أو الهاتف">
+                    </div>
+                    <div class="mb-3 text-start">
+                        <label class="form-label">كلمة المرور الجديدة</label>
+                        <input type="password" class="form-control" id="resetNewPass" required placeholder="كلمة المرور الجديدة">
+                    </div>
+                    <button type="submit" class="btn btn-warning w-100 py-2 fw-bold">تحديث كلمة المرور</button>
+                </form>
+
+                <div class="mt-3 pt-2 border-top small">
+                    <a href="#" class="text-decoration-none fw-bold" onclick="showPage('loginPage')"><i class="fas fa-arrow-right me-1"></i> العودة لتسجيل الدخول</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. الصفحة الرئيسية (الخيارات) -->
     <div id="mainPage" class="page">
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
             <div class="container">
                 <span class="navbar-brand"><i class="fas fa-hard-hat me-2"></i>منصة المقاولات والديكور</span>
-                <button class="btn btn-outline-light btn-sm" onclick="showPage('loginPage')"><i class="fas fa-sign-out-alt me-1"></i> خروج</button>
+                <div class="d-flex align-items-center text-white gap-3">
+                    <span id="welcomeUser" class="small text-warning fw-bold">مرحباً بك</span>
+                    <button class="btn btn-outline-light btn-sm" onclick="logout()"><i class="fas fa-sign-out-alt me-1"></i> خروج</button>
+                </div>
             </div>
         </nav>
         <div class="container py-5">
@@ -119,7 +208,7 @@
         </div>
     </div>
 
-    <!-- 3. قسم مقاولات البناء -->
+    <!-- 5. قسم مقاولات البناء -->
     <div id="contractingPage" class="page">
         <nav class="navbar navbar-dark bg-primary mb-4">
             <div class="container">
@@ -134,11 +223,13 @@
                     <i class="fas fa-plus me-1"></i> إضافة مشروع جديد
                 </button>
             </div>
-            <div class="row" id="projectsList"></div>
+            <div class="row" id="projectsList">
+                <!-- يتم تحميل المشاريع هنا -->
+            </div>
         </div>
     </div>
 
-    <!-- 4. تفاصيل المشروع ومواد البناء -->
+    <!-- 6. تفاصيل المشروع ومواد البناء -->
     <div id="projectDetailsPage" class="page">
         <nav class="navbar navbar-dark bg-secondary mb-4">
             <div class="container">
@@ -183,16 +274,19 @@
                             <th>اسم المادة</th>
                             <th>القيمة</th>
                             <th>تاريخ الشراء</th>
+                            <th>ملاحظات</th>
                             <th>إجراء</th>
                         </tr>
                     </thead>
-                    <tbody id="materialsTableBody"></tbody>
+                    <tbody id="materialsTableBody">
+                        <!-- تحميل مواد البناء -->
+                    </tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <!-- 5. قسم أعمال الديكور -->
+    <!-- 7. قسم أعمال الديكور -->
     <div id="decorPage" class="page">
         <nav class="navbar navbar-dark bg-warning text-dark mb-4">
             <div class="container">
@@ -202,39 +296,41 @@
         </nav>
         <div class="container">
             <div class="row">
+                <!-- نموذج إدخال المعاملة -->
                 <div class="col-md-5 mb-4 no-print">
                     <div class="card card-custom p-4">
                         <h5 class="fw-bold mb-3">إدخال تفاصيل معاملة ديكور</h5>
-                        <div>
+                        <form id="decorForm">
                             <div class="mb-2">
                                 <label class="form-label">اسم العميل</label>
-                                <input type="text" class="form-control" id="decClientName">
+                                <input type="text" class="form-control" id="decClientName" required>
                             </div>
                             <div class="mb-2">
                                 <label class="form-label">رقم الهاتف (الواتساب)</label>
-                                <input type="text" class="form-control" id="decClientPhone" placeholder="مثال: 96899000000">
+                                <input type="text" class="form-control" id="decClientPhone" placeholder="مثال: 96899000000" required>
                             </div>
                             <div class="mb-2">
                                 <label class="form-label">نوع العمل / الخدمة</label>
-                                <input type="text" class="form-control" id="decWorkType" placeholder="تكسية جدران، جبس...">
+                                <input type="text" class="form-control" id="decWorkType" placeholder="تكسية جدران، جبس، إضاءة..." required>
                             </div>
                             <div class="mb-2">
                                 <label class="form-label">التكلفة الإجمالية</label>
-                                <input type="number" class="form-control" id="decTotal">
+                                <input type="number" class="form-control" id="decTotal" required>
                             </div>
                             <div class="mb-2">
                                 <label class="form-label">المبلغ المدفوع (الدفعة المقدمة)</label>
-                                <input type="number" class="form-control" id="decPaid">
+                                <input type="number" class="form-control" id="decPaid" required>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">ملاحظات وشروط</label>
                                 <textarea class="form-control" id="decNotes" rows="2"></textarea>
                             </div>
                             <button type="button" class="btn btn-warning w-100 fw-bold" onclick="generateDecorInvoice()">تحديث المعاينة</button>
-                        </div>
+                        </form>
                     </div>
                 </div>
 
+                <!-- معاينة الفاتورة/العقد والطباعة -->
                 <div class="col-md-7">
                     <div id="printableArea" class="printable-invoice">
                         <div class="text-center mb-4 border-bottom pb-3">
@@ -282,6 +378,7 @@
     </div>
 
     <!-- Modals -->
+    <!-- Modal إضافة مشروع جديد -->
     <div class="modal fade" id="newProjectModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -290,20 +387,23 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">اسم المشروع</label>
-                        <input type="text" class="form-control" id="pName">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">القيمة الإجمالية للمشروع</label>
-                        <input type="number" class="form-control" id="pTotal">
-                    </div>
-                    <button type="button" class="btn btn-primary w-100" onclick="addNewProject()">إضافة المشروع</button>
+                    <form id="addProjectForm">
+                        <div class="mb-3">
+                            <label class="form-label">اسم المشروع</label>
+                            <input type="text" class="form-control" id="pName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">القيمة الإجمالية للمشروع</label>
+                            <input type="number" class="form-control" id="pTotal" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">إضافة المشروع</button>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Modal إضافة مادة بناء -->
     <div class="modal fade" id="addMaterialModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -312,19 +412,21 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">اسم المادة</label>
-                        <input type="text" class="form-control" id="mName">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">قيمة المادة</label>
-                        <input type="number" class="form-control" id="mCost">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">تاريخ الشراء</label>
-                        <input type="date" class="form-control" id="mDate">
-                    </div>
-                    <button type="button" class="btn btn-success w-100" onclick="addNewMaterial()">إضافة وسحب من الإجمالي</button>
+                    <form id="addMaterialForm">
+                        <div class="mb-3">
+                            <label class="form-label">اسم المادة</label>
+                            <input type="text" class="form-control" id="mName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">قيمة المادة</label>
+                            <input type="number" class="form-control" id="mCost" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">تاريخ الشراء</label>
+                            <input type="date" class="form-control" id="mDate" required>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100">إضافة وسحب من الإجمالي</button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -333,34 +435,116 @@
     <!-- JS dependencies -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // إدارة بيانات المستخدمين والمشاريع
+        let users = JSON.parse(localStorage.getItem('sys_users')) || [
+            { fullName: "المدير العام", phone: "0000", username: "admin", password: "123" }
+        ];
         let projects = JSON.parse(localStorage.getItem('projects')) || [];
         let activeProjectId = null;
+        let currentUser = null;
 
+        // التنقل بين الصفحات
         function showPage(pageId) {
             document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
             document.getElementById(pageId).classList.add('active');
             if(pageId === 'contractingPage') renderProjects();
         }
 
-        // دالة إجبارية بسيطة جداً لتجاوز شاشة الدخول بسلاسة تامة
-        function forceLogin() {
-            showPage('mainPage');
+        // 1. معالجة تسجيل الدخول
+        function handleLogin(e) {
+            e.preventDefault();
+            const uName = document.getElementById('loginUsername').value.trim();
+            const uPass = document.getElementById('loginPassword').value.trim();
+            const alertBox = document.getElementById('loginAlert');
+
+            const user = users.find(u => u.username.toLowerCase() === uName.toLowerCase() && u.password === uPass);
+
+            if (user) {
+                currentUser = user;
+                document.getElementById('welcomeUser').innerText = `مرحباً: ${user.fullName}`;
+                alertBox.classList.add('d-none');
+                showPage('mainPage');
+            } else {
+                alertBox.innerText = 'اسم المستخدم أو كلمة المرور غير صحيحة!';
+                alertBox.classList.remove('d-none');
+            }
         }
 
-        function addNewProject() {
-            const name = document.getElementById('pName').value;
-            const total = parseFloat(document.getElementById('pTotal').value);
-            if(!name || isNaN(total)) { alert('يرجى إدخال اسم المشروع والقيمة الإجمالية'); return; }
+        // 2. معالجة تسجيل حساب جديد
+        function handleRegister(e) {
+            e.preventDefault();
+            const fullName = document.getElementById('regFullName').value.trim();
+            const phone = document.getElementById('regPhone').value.trim();
+            const username = document.getElementById('regUsername').value.trim();
+            const password = document.getElementById('regPassword').value.trim();
+            const alertBox = document.getElementById('regAlert');
 
-            projects.push({ id: Date.now(), name, total, materials: [] });
+            if (users.some(u => u.username.toLowerCase() === username.toLowerCase())) {
+                alertBox.innerText = 'اسم المستخدم هذا مسجل بالفعل، اختر اسماً آخر!';
+                alertBox.classList.remove('d-none');
+                return;
+            }
+
+            const newUser = { fullName, phone, username, password };
+            users.push(newUser);
+            localStorage.setItem('sys_users', JSON.stringify(users));
+
+            alertBox.classList.add('d-none');
+            alert('تم إنشاء الحساب بنجاح! يمكنك الآن تسجيل الدخول.');
+            document.getElementById('registerForm').reset();
+            showPage('loginPage');
+        }
+
+        // 3. معالجة نسيت كلمة المرور
+        function handleResetPassword(e) {
+            e.preventDefault();
+            const accountInput = document.getElementById('resetAccount').value.trim();
+            const newPass = document.getElementById('resetNewPass').value.trim();
+            const alertBox = document.getElementById('forgotAlert');
+
+            const userIndex = users.findIndex(u => u.username.toLowerCase() === accountInput.toLowerCase() || u.phone === accountInput);
+
+            if (userIndex !== -1) {
+                users[userIndex].password = newPass;
+                localStorage.setItem('sys_users', JSON.stringify(users));
+
+                alertBox.className = 'alert alert-success py-2 small';
+                alertBox.innerText = 'تم تحديث كلمة المرور بنجاح! جاري توجيهك للتسجيل...';
+                alertBox.classList.remove('d-none');
+
+                setTimeout(() => {
+                    document.getElementById('forgotForm').reset();
+                    alertBox.classList.add('d-none');
+                    showPage('loginPage');
+                }, 2000);
+            } else {
+                alertBox.className = 'alert alert-danger py-2 small';
+                alertBox.innerText = 'لم يتم العثور على حساب بهذا الاسم أو رقم الهاتف!';
+                alertBox.classList.remove('d-none');
+            }
+        }
+
+        function logout() {
+            currentUser = null;
+            document.getElementById('loginForm').reset();
+            showPage('loginPage');
+        }
+
+        // قسم المقاولات
+        document.getElementById('addProjectForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const project = {
+                id: Date.now(),
+                name: document.getElementById('pName').value,
+                total: parseFloat(document.getElementById('pTotal').value),
+                materials: []
+            };
+            projects.push(project);
             saveData();
             renderProjects();
-            
-            const modalEl = document.getElementById('newProjectModal');
-            bootstrap.Modal.getInstance(modalEl).hide();
-            document.getElementById('pName').value = '';
-            document.getElementById('pTotal').value = '';
-        }
+            bootstrap.Modal.getInstance(document.getElementById('newProjectModal')).hide();
+            this.reset();
+        });
 
         function renderProjects() {
             const list = document.getElementById('projectsList');
@@ -370,12 +554,11 @@
                 const remaining = p.total - totalExpenses;
                 list.innerHTML += `
                     <div class="col-md-4 mb-3">
-                        <div class="card card-custom p-3 shadow-sm">
-                            <h5 class="fw-bold text-primary">${p.name}</h5>
-                            <hr>
-                            <p class="text-muted mb-1">الإجمالي: ${p.total} OMR</p>
-                            <p class="text-danger mb-1">المصروفات: ${totalExpenses} OMR</p>
-                            <p class="text-success mb-3 fw-bold">المتبقي: ${remaining} OMR</p>
+                        <div class="card card-custom p-3">
+                            <h5 class="fw-bold">${p.name}</h5>
+                            <p class="text-muted mb-1">الإجمالي: ${p.total}</p>
+                            <p class="text-danger mb-1">المصروفات: ${totalExpenses}</p>
+                            <p class="text-success mb-3 fw-bold">المتبقي: ${remaining}</p>
                             <button class="btn btn-outline-primary btn-sm" onclick="openProjectDetails(${p.id})">فتح وتفاصيل المواد</button>
                         </div>
                     </div>
@@ -396,9 +579,9 @@
             const totalExpenses = project.materials.reduce((sum, m) => sum + m.cost, 0);
             const remaining = project.total - totalExpenses;
 
-            document.getElementById('projTotalCost').innerText = project.total + ' OMR';
-            document.getElementById('projTotalExpenses').innerText = totalExpenses + ' OMR';
-            document.getElementById('projRemainingCost').innerText = remaining + ' OMR';
+            document.getElementById('projTotalCost').innerText = project.total;
+            document.getElementById('projTotalExpenses').innerText = totalExpenses;
+            document.getElementById('projRemainingCost').innerText = remaining;
 
             const table = document.getElementById('materialsTableBody');
             table.innerHTML = '';
@@ -407,31 +590,29 @@
                     <tr>
                         <td>${idx + 1}</td>
                         <td>${m.name}</td>
-                        <td>${m.cost} OMR</td>
+                        <td>${m.cost}</td>
                         <td>${m.date}</td>
+                        <td>-</td>
                         <td><button class="btn btn-danger btn-sm" onclick="deleteMaterial(${m.id})">حذف</button></td>
                     </tr>
                 `;
             });
         }
 
-        function addNewMaterial() {
-            const name = document.getElementById('mName').value;
-            const cost = parseFloat(document.getElementById('mCost').value);
-            const date = document.getElementById('mDate').value;
-            if(!name || isNaN(cost) || !date) { alert('يرجى تعبئة كافة بيانات المادة'); return; }
-
+        document.getElementById('addMaterialForm').addEventListener('submit', function(e) {
+            e.preventDefault();
             const project = projects.find(p => p.id === activeProjectId);
-            project.materials.push({ id: Date.now(), name, cost, date });
+            project.materials.push({
+                id: Date.now(),
+                name: document.getElementById('mName').value,
+                cost: parseFloat(document.getElementById('mCost').value),
+                date: document.getElementById('mDate').value
+            });
             saveData();
             renderProjectStats();
-
-            const modalEl = document.getElementById('addMaterialModal');
-            bootstrap.Modal.getInstance(modalEl).hide();
-            document.getElementById('mName').value = '';
-            document.getElementById('mCost').value = '';
-            document.getElementById('mDate').value = '';
-        }
+            bootstrap.Modal.getInstance(document.getElementById('addMaterialModal')).hide();
+            this.reset();
+        });
 
         function deleteMaterial(mId) {
             const project = projects.find(p => p.id === activeProjectId);
@@ -440,6 +621,7 @@
             renderProjectStats();
         }
 
+        // قسم الديكور
         function generateDecorInvoice() {
             const clientName = document.getElementById('decClientName').value || '-';
             const workType = document.getElementById('decWorkType').value || '-';
@@ -465,7 +647,7 @@
             const paid = document.getElementById('decPaid').value;
             const remaining = total - paid;
 
-            const msg = `مرحباً بك ${clientName}، تفاصيل معاملة الديكور الخاصة بك:\n\n- نوع العمل: ${workType}\n- الإجمالي: ${total} OMR\n- المدفوع: ${paid} OMR\n- المتبقي: ${remaining} OMR\n\nشكراً لتعاملك معنا!`;
+            const msg = `مرحباً بك ${clientName}، تفاصيل معاملة الديكور الخاصة بك:\n\n- نوع العمل: ${workType}\n- الإجمالي: ${total}\n- المدفوع: ${paid}\n- المتبقي: ${remaining}\n\nشكراً لتعاملك معنا!`;
             window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
         }
 
