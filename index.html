@@ -56,7 +56,8 @@
                     <input type="password" class="form-control" id="loginPassword" value="123">
                 </div>
                 
-                <button type="button" onclick="login()" class="btn btn-primary w-100 py-2 fw-bold">تسجيل الدخول</button>
+                <!-- تم تحويل الزر إلى رابط تفاعلي مضمون 100% -->
+                <a href="javascript:void(0);" onclick="login()" class="btn btn-primary w-100 py-2 fw-bold text-decoration-none text-white">تسجيل الدخول</a>
             </div>
         </div>
     </div>
@@ -299,7 +300,6 @@
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw4ylt5kzWd6M-DK6xOUcXCUQTDfz2np26Fpr1e4DmlrbT0IBOTkYNjbpTYfMCI07fZ/exec";
         
-        // هيكل بيانات افتراضي أساسي يضمن عمل تسجيل الدخول فوراً
         let dbData = {
             projects: [],
             users: [
@@ -312,13 +312,11 @@
         let activeProjectId = null;
 
         window.onload = function() {
-            // التحقق الفوري من الجلسة المخزنة مسبقاً
+            // استرجاع البيانات المخزنة محلياً إن وجدت لتسريع الدخول الفوري
+            const localSaved = localStorage.getItem('app_db_cache');
+            if (localSaved) {
+                try { dbData = JSON.parse(localSaved); } catch(e) {}
+            }
             checkSession();
-            // جلب البيانات المحدثة من السحابة في الخلفية
             loadDataFromDrive();
         };
-
-        function checkSession() {
-            const savedUsername = localStorage.getItem('app_user');
-            if (savedUsername && dbData.users) {
-                const user = dbData.
