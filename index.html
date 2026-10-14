@@ -56,7 +56,7 @@
                     <input type="password" class="form-control" id="loginPassword" value="123">
                 </div>
                 
-                <button type="button" onclick="login()" class="btn btn-primary w-100 py-2 fw-bold">تسجيل الدخول</button>
+                <button type="button" onclick="login()" class="btn btn-primary w-100 py-2 fw-bold shadow-sm">تسجيل الدخول</button>
             </div>
         </div>
     </div>
@@ -299,7 +299,6 @@
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw4ylt5kzWd6M-DK6xOUcXCUQTDfz2np26Fpr1e4DmlrbT0IBOTkYNjbpTYfMCI07fZ/exec";
         
-        // هيكل النظام الأساسي مع حماية تامة لبيانات المستخدمين
         let dbData = {
             projects: [],
             users: [
@@ -312,10 +311,451 @@
         let activeProjectId = null;
 
         window.onload = function() {
-            // تحميل البيانات المخزنة محلياً فوراً لمنع أي تأخير أو فقدان للجلسة
+            // تحميل البيانات المخزنة محلياً لضمان وجود المستخدمين فوراً
             const localSaved = localStorage.getItem('app_system_db');
             if (localSaved) {
                 try {
                     const parsed = JSON.parse(localSaved);
                     if(parsed && typeof parsed === 'object') {
-                        dbData.projects = parsed
+                        dbData.projects = parsed.projects || [];
+                        if(parsed.users && Array.isArray(parsed.users) && parsed.users.length > 0) {
+                            dbData.users = parsed.users;
+                        }
+                        dbData.logo = parsed.logo || "";
+                    }
+                } catch(e) {}
+            }
+            
+            checkSession();
+            loadDataFromDrive();
+        };
+
+        function checkSession() {
+            const savedUsername = localStorage.getItem('app_user');
+            if (savedUsername) {
+                const user = dbData.users.find(u => u.username === savedUsername);
+                if (user) {
+                    currentUser = user;
+                    applyUserPermissions();
+                    showPage('mainPage');
+                    return;
+                }
+            }
+            showPage('loginPage');
+        }
+
+        function login() {
+            const uInput = document.getElementById('loginUsername').value.trim();
+            const pInput = document.getElementById('loginPassword').value.trim();
+            
+            if(!uInput || !pInput) {
+                alert('يرجى إدخال اسم المستخدم وكلمة المرور');
+                return;
+            }
+
+            // ضمان وجود المستخدم الافتراضي دائماً
+            if(!dbData.users) {
+                dbData.users = [{ username: 'admin', password: '123', role: 'admin', perms: { contracting: true, decor: true, edit: true, delete: true } }];
+            }
+
+            const user = dbData.users.find(u => u.username === uInput && u.password === pInput);
+            if (user) {
+                currentUser = user;
+                localStorage.setItem('app_user', user.username);
+                applyUserPermissions();
+                showPage('mainPage');
+            } else {
+                alert('اسم المستخدم أو كلمة المرور غير صحيحة!');
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('app_user');
+            currentUser = null;
+            showPage('loginPage');
+        }
+
+        function applyUserPermissions() {
+            if(!currentUser) return;
+
+            const adminBtn = document.getElementById('adminUsersBtn');
+            if(currentUser.role === 'admin') adminBtn.classList.remove('d-none');
+            else adminBtn.classList.add('d-none');
+
+            document.getElementById('navContractingCard').style.display = currentUser.perms.contracting ? 'flex' : 'none';
+            document.getElementById('navDecorCard').style.display = currentUser.perms.decor ? 'flex' : 'none';
+
+            document.getElementById('addProjectBtn').style.display = currentUser.perms.edit ? 'inline-block' : 'none';
+            document.getElementById('addMaterialBtn').style.display = currentUser.perms.edit ? 'block' : 'none';
+
+            renderLogo();
+        }
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            const target = document.getElementById(pageId);
+            if(target) target.classList.add('active');
+            
+            if(pageId === 'contractingPage') renderProjects();
+            if(pageId === 'usersManagementPage') renderUsersList();
+        }
+
+        function loadDataFromDrive() {
+            const statusEl = document.getElementById('syncStatus');
+            if(statusEl) statusEl.innerHTML = '<i class="fas fa-sync fa-spin me-1"></i> مزامنة...';
+            
+            fetch(SCRIPT_URL)
+                .then(res => res.json())
+                .then(data => {
+                    if(data && typeof data === 'object') {
+                        if(Array.isArray(data)) {
+                            dbData.projects = data;
+                        } else {
+                            dbData.projects = data.projects || dbData.projects;
+                            if(data.users && Array.isArray(data.users) && data.users.length > 0) {
+                                dbData.users = data.users;
+                            }
+                            if(data.logo !== undefined) dbData.logo = data.logo;
+                        }
+                    }
+                    
+                    if(!dbData.users.find(u => u.username === 'admin')) {
+                        dbData.users.unshift({ username: 'admin', password: '123', role: 'admin', perms: { contracting: true, decor: true, edit: true, delete: true } });
+                    }
+
+                    localStorage.setItem('app_system_db', JSON.stringify(dbData));
+                    if(currentUser) applyUserPermissions();
+                    if(statusEl) statusEl.innerHTML = '<i class="fas fa-check-circle me-1"></i> متصل بالسحابة';
+                })
+                .catch(err => {
+                    if(statusEl) statusEl.innerHTML = '<i class="fas fa-check-circle me-1"></i> جاهز (محلي)';
+                });
+        }
+
+        function saveDataToDrive() {
+            localStorage.setItem('app_system_db', JSON.stringify(dbData));
+            const statusEl = document.getElementById('syncStatus');
+            if(statusEl) statusEl.innerHTML = '<i class="fas fa-sync fa-spin me-1"></i> حفظ...';
+
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dbData)
+            })
+            .then(() => {
+                if(statusEl) statusEl.innerHTML = '<i class="fas fa-check-circle me-1"></i> تم الحفظ';
+                setTimeout(() => { if(statusEl) statusEl.innerHTML = '<i class="fas fa-check-circle me-1"></i> متصل بالسحابة'; }, 2000);
+            })
+            .catch(err => {
+                if(statusEl) statusEl.innerHTML = '<i class="fas fa-check-circle me-1"></i> حفظ محلي';
+            });
+        }
+
+        function previewAndSaveLogo(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                dbData.logo = e.target.result;
+                renderLogo();
+                saveDataToDrive();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removeLogo() {
+            dbData.logo = "";
+            renderLogo();
+            saveDataToDrive();
+        }
+
+        function renderLogo() {
+            const logoSrc = dbData.logo || "";
+            const hLogo = document.getElementById('headerLogo');
+            const lLogo = document.getElementById('loginCompanyLogo');
+            const dIcon = document.getElementById('defaultLoginIcon');
+            const pLogo = document.getElementById('logoPreview');
+            const iLogo = document.getElementById('invoiceLogoImg');
+            const noLogoText = document.getElementById('noLogoText');
+
+            if (logoSrc) {
+                if(hLogo) { hLogo.src = logoSrc; hLogo.classList.remove('d-none'); }
+                if(lLogo) { lLogo.src = logoSrc; lLogo.classList.remove('d-none'); }
+                if(dIcon) dIcon.classList.add('d-none');
+                if(pLogo) { pLogo.src = logoSrc; pLogo.classList.remove('d-none'); }
+                if(iLogo) { iLogo.src = logoSrc; iLogo.classList.remove('d-none'); }
+                if(noLogoText) noLogoText.classList.add('d-none');
+            } else {
+                if(hLogo) hLogo.classList.add('d-none');
+                if(lLogo) lLogo.classList.add('d-none');
+                if(dIcon) dIcon.classList.remove('d-none');
+                if(pLogo) pLogo.classList.add('d-none');
+                if(iLogo) iLogo.classList.add('d-none');
+                if(noLogoText) noLogoText.classList.remove('d-none');
+            }
+        }
+
+        function addNewUser() {
+            const u = document.getElementById('newUsername').value.trim();
+            const p = document.getElementById('newPassword').value.trim();
+            if(!u || !p) { alert('يرجى كتابة اسم المستخدم وكلمة المرور'); return; }
+
+            if(dbData.users.find(item => item.username === u)) {
+                alert('اسم المستخدم موجود بالفعل'); return;
+            }
+
+            const newUser = {
+                username: u,
+                password: p,
+                role: 'user',
+                perms: {
+                    contracting: document.getElementById('permContracting').checked,
+                    decor: document.getElementById('permDecor').checked,
+                    edit: document.getElementById('permEdit').checked,
+                    delete: document.getElementById('permDelete').checked
+                }
+            };
+
+            dbData.users.push(newUser);
+            saveDataToDrive();
+            renderUsersList();
+            document.getElementById('newUsername').value = '';
+            document.getElementById('newPassword').value = '';
+        }
+
+        function deleteUser(username) {
+            if(username === 'admin') { alert('لا يمكن حذف حساب الآدمن الرئيسي'); return; }
+            if(confirm(`هل أنت متأكد من حذف المستخدم ${username}؟`)) {
+                dbData.users = dbData.users.filter(u => u.username !== username);
+                saveDataToDrive();
+                renderUsersList();
+            }
+        }
+
+        function renderUsersList() {
+            const table = document.getElementById('usersTableBody');
+            if(!table) return;
+            table.innerHTML = '';
+            dbData.users.forEach(u => {
+                const permsList = u.role === 'admin' ? 'كامل الصلاحيات' : `
+                    ${u.perms.contracting ? 'مقاولات | ' : ''}
+                    ${u.perms.decor ? 'ديكور | ' : ''}
+                    ${u.perms.edit ? 'تعديل | ' : ''}
+                    ${u.perms.delete ? 'حذف' : ''}
+                `;
+                table.innerHTML += `
+                    <tr>
+                        <td class="fw-bold">${u.username}</td>
+                        <td><span class="badge ${u.role === 'admin' ? 'bg-danger' : 'bg-secondary'}">${u.role}</span></td>
+                        <td class="small">${permsList}</td>
+                        <td>${u.role !== 'admin' ? `<button class="btn btn-danger btn-sm" onclick="deleteUser('${u.username}')">حذف</button>` : '-'}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        function filterProjects() {
+            const query = document.getElementById('searchProjectInput').value.toLowerCase();
+            renderProjects(query);
+        }
+
+        function renderProjects(query = "") {
+            const list = document.getElementById('projectsList');
+            if(!list) return;
+            list.innerHTML = '';
+
+            let filtered = dbData.projects || [];
+            if(query) {
+                filtered = filtered.filter(p => p.name.toLowerCase().includes(query));
+            }
+
+            if(filtered.length === 0) {
+                list.innerHTML = '<div class="text-center text-muted py-4">لا توجد مشاريع مطابقة للبحث.</div>';
+                return;
+            }
+
+            filtered.forEach(p => {
+                const totalExpenses = p.materials ? p.materials.reduce((sum, m) => sum + m.cost, 0) : 0;
+                const remaining = p.total - totalExpenses;
+                
+                const showEdit = currentUser && currentUser.perms.edit;
+                const showDelete = currentUser && currentUser.perms.delete;
+
+                list.innerHTML += `
+                    <div class="col-md-4 mb-3">
+                        <div class="card card-custom p-3 shadow-sm">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="fw-bold text-primary mb-0">${p.name}</h5>
+                                ${(showEdit || showDelete) ? `
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="fas fa-ellipsis-v"></i></button>
+                                    <ul class="dropdown-menu">
+                                        ${showEdit ? `<li><a class="dropdown-item" href="javascript:void(0);" onclick="editProject(${p.id})"><i class="fas fa-edit text-warning me-2"></i>تعديل</a></li>` : ''}
+                                        ${showDelete ? `<li><a class="dropdown-item" href="javascript:void(0);" onclick="deleteProject(${p.id})"><i class="fas fa-trash text-danger me-2"></i>حذف</a></li>` : ''}
+                                    </ul>
+                                </div>` : ''}
+                            </div>
+                            <hr>
+                            <p class="text-muted mb-1">الإجمالي: ${p.total} OMR</p>
+                            <p class="text-danger mb-1">المصروفات: ${totalExpenses} OMR</p>
+                            <p class="text-success mb-3 fw-bold">المتبقي: ${remaining} OMR</p>
+                            <button class="btn btn-outline-primary btn-sm w-100" onclick="openProjectDetails(${p.id})">فتح وتفاصيل المواد</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function openAddProjectModal() {
+            document.getElementById('projectModalTitle').innerText = 'إضافة مشروع جديد';
+            document.getElementById('editingProjectId').value = '';
+            document.getElementById('pName').value = '';
+            document.getElementById('pTotal').value = '';
+        }
+
+        function editProject(id) {
+            const p = dbData.projects.find(item => item.id === id);
+            if(!p) return;
+            document.getElementById('projectModalTitle').innerText = 'تعديل مشروع';
+            document.getElementById('editingProjectId').value = p.id;
+            document.getElementById('pName').value = p.name;
+            document.getElementById('pTotal').value = p.total;
+            
+            const modal = new bootstrap.Modal(document.getElementById('newProjectModal'));
+            modal.show();
+        }
+
+        function saveProject() {
+            const editingId = document.getElementById('editingProjectId').value;
+            const name = document.getElementById('pName').value.trim();
+            const total = parseFloat(document.getElementById('pTotal').value);
+            if(!name || isNaN(total)) { alert('يرجى إدخال البيانات كاملة'); return; }
+
+            if(editingId) {
+                const p = dbData.projects.find(item => item.id == editingId);
+                if(p) { p.name = name; p.total = total; }
+            } else {
+                dbData.projects.push({ id: Date.now(), name, total, materials: [] });
+            }
+
+            saveDataToDrive();
+            renderProjects();
+            
+            const modalEl = document.getElementById('newProjectModal');
+            const instance = bootstrap.Modal.getInstance(modalEl);
+            if(instance) instance.hide();
+        }
+
+        function deleteProject(id) {
+            if(confirm('هل أنت متأكد من حذف هذا المشروع؟')) {
+                dbData.projects = dbData.projects.filter(item => item.id !== id);
+                saveDataToDrive();
+                renderProjects();
+            }
+        }
+
+        function openProjectDetails(id) {
+            activeProjectId = id;
+            const project = dbData.projects.find(p => p.id === id);
+            document.getElementById('currentProjectTitle').innerText = `مشروع: ${project.name}`;
+            renderProjectStats();
+            showPage('projectDetailsPage');
+        }
+
+        function filterMaterials() {
+            const query = document.getElementById('searchMaterialInput').value.toLowerCase();
+            renderProjectStats(query);
+        }
+
+        function renderProjectStats(query = "") {
+            const project = dbData.projects.find(p => p.id === activeProjectId);
+            if(!project) return;
+
+            const totalExpenses = project.materials ? project.materials.reduce((sum, m) => sum + m.cost, 0) : 0;
+            const remaining = project.total - totalExpenses;
+
+            document.getElementById('projTotalCost').innerText = project.total + ' OMR';
+            document.getElementById('projTotalExpenses').innerText = totalExpenses + ' OMR';
+            document.getElementById('projRemainingCost').innerText = remaining + ' OMR';
+
+            const table = document.getElementById('materialsTableBody');
+            table.innerHTML = '';
+            
+            let mats = project.materials || [];
+            if(query) mats = mats.filter(m => m.name.toLowerCase().includes(query));
+
+            const showDelete = currentUser && currentUser.perms.delete;
+
+            mats.forEach((m, idx) => {
+                table.innerHTML += `
+                    <tr>
+                        <td>${idx + 1}</td>
+                        <td>${m.name}</td>
+                        <td>${m.cost} OMR</td>
+                        <td>${m.date}</td>
+                        <td class="action-col">${showDelete ? `<button class="btn btn-danger btn-sm" onclick="deleteMaterial(${m.id})">حذف</button>` : '-'}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        function addNewMaterial() {
+            const name = document.getElementById('mName').value.trim();
+            const cost = parseFloat(document.getElementById('mCost').value);
+            const date = document.getElementById('mDate').value;
+            if(!name || isNaN(cost) || !date) { alert('يرجى تعبئة بيانات المادة كاملة'); return; }
+
+            const project = dbData.projects.find(p => p.id === activeProjectId);
+            if(!project.materials) project.materials = [];
+            project.materials.push({ id: Date.now(), name, cost, date });
+            
+            saveDataToDrive();
+            renderProjectStats();
+
+            const modalEl = document.getElementById('addMaterialModal');
+            const instance = bootstrap.Modal.getInstance(modalEl);
+            if(instance) instance.hide();
+            document.getElementById('mName').value = '';
+            document.getElementById('mCost').value = '';
+            document.getElementById('mDate').value = '';
+        }
+
+        function deleteMaterial(mId) {
+            const project = dbData.projects.find(p => p.id === activeProjectId);
+            project.materials = project.materials.filter(m => m.id !== mId);
+            saveDataToDrive();
+            renderProjectStats();
+        }
+
+        function generateDecorInvoice() {
+            const clientName = document.getElementById('decClientName').value || '-';
+            const workType = document.getElementById('decWorkType').value || '-';
+            const total = parseFloat(document.getElementById('decTotal').value) || 0;
+            const paid = parseFloat(document.getElementById('decPaid').value) || 0;
+            const notes = document.getElementById('decNotes').value || '-';
+
+            document.getElementById('viewClientName').innerText = clientName;
+            document.getElementById('viewWorkType').innerText = workType;
+            document.getElementById('viewTotal').innerText = total + ' OMR';
+            document.getElementById('viewPaid').innerText = paid + ' OMR';
+            document.getElementById('viewRemaining').innerText = (total - paid) + ' OMR';
+            document.getElementById('viewNotes').innerText = notes;
+            document.getElementById('viewDate').innerText = new Date().toLocaleDateString('ar-EG');
+        }
+
+        function sendWhatsApp() {
+            const phone = document.getElementById('decClientPhone').value;
+            if(!phone) { alert('يرجى إدخال رقم الهاتف أولاً'); return; }
+            const clientName = document.getElementById('decClientName').value;
+            const workType = document.getElementById('decWorkType').value;
+            const total = document.getElementById('decTotal').value;
+            const paid = document.getElementById('decPaid').value;
+            const remaining = total - paid;
+
+            const msg = `مرحباً بك ${clientName}، تفاصيل معاملة الديكور الخاصة بك:\n\n- نوع العمل: ${workType}\n- الإجمالي: ${total} OMR\n- المدفوع: ${paid} OMR\n- المتبقي: ${remaining} OMR\n\nشكراً لتعاملك معنا!`;
+            window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+        }
+    </script>
+</body>
+</html>
