@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام إدارة المقاولات والديكور</title>
+    <title>نظام إدارة المقاولات والديكور متقدم</title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
     <!-- FontAwesome Icons -->
@@ -11,16 +11,12 @@
     <!-- Google Fonts (Cairo) -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Cairo', sans-serif;
-            background-color: #f4f6f9;
-            color: #333;
-        }
+        body { font-family: 'Cairo', sans-serif; background-color: #f4f6f9; color: #333; }
         .page { display: none; }
         .page.active { display: block; }
         .card-custom { border: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         .section-btn {
-            height: 180px; font-size: 1.5rem; font-weight: bold;
+            height: 170px; font-size: 1.4rem; font-weight: bold;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             border-radius: 15px; text-decoration: none; color: white; transition: all 0.3s; cursor: pointer;
         }
@@ -28,6 +24,8 @@
         .bg-decor { background: linear-gradient(135deg, #d4a373 0%, #a98467 100%); }
         .printable-invoice { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
         #syncStatus { font-size: 0.85rem; }
+        .company-logo { max-height: 50px; object-fit: contain; }
+        .invoice-logo { max-height: 80px; object-fit: contain; }
         @media print {
             body * { visibility: hidden; }
             #printableArea, #printableArea * { visibility: visible; }
@@ -39,24 +37,26 @@
 <body>
 
     <!-- 1. صفحة تسجيل الدخول -->
-    <div id="loginPage" class="page">
+    <div id="loginPage" class="page active">
         <div class="container min-vh-100 d-flex align-items-center justify-content-center">
             <div class="card card-custom p-4 col-md-5 col-lg-4 text-center">
-                <div class="mb-3 text-primary"><i class="fas fa-building-columns fa-3x"></i></div>
+                <div id="loginLogoContainer" class="mb-3">
+                    <i class="fas fa-building-columns fa-3x text-primary" id="defaultLoginIcon"></i>
+                    <img id="loginCompanyLogo" src="" class="invoice-logo d-none" alt="شعار الشركة">
+                </div>
                 <h3 class="fw-bold mb-3">تسجيل الدخول للنظام</h3>
-                <p class="text-muted small mb-3">مزامنة سحابية عبر Google Drive</p>
+                <p class="text-muted small mb-3">منصة إدارية مخصصة للمقاولات والديكور</p>
                 
                 <div class="mb-3 text-start">
                     <label class="form-label">اسم المستخدم</label>
-                    <input type="text" class="form-control" id="loginUsername" value="admin">
+                    <input type="text" class="form-control" id="loginUsername" placeholder="ادخل اسم المستخدم">
                 </div>
                 <div class="mb-3 text-start">
                     <label class="form-label">كلمة المرور</label>
-                    <input type="password" class="form-control" id="loginPassword" value="123">
+                    <input type="password" class="form-control" id="loginPassword" placeholder="ادخل كلمة المرور">
                 </div>
                 
-                <!-- تم تحويله إلى رابط مباشر لضمان الانتقال الفوري 100% -->
-                <a href="javascript:void(0);" onclick="forceLogin()" class="btn btn-primary w-100 py-2 fw-bold text-decoration-none">تسجيل الدخول</a>
+                <button type="button" onclick="login()" class="btn btn-primary w-100 py-2 fw-bold">تسجيل الدخول</button>
             </div>
         </div>
     </div>
@@ -65,22 +65,26 @@
     <div id="mainPage" class="page">
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
             <div class="container">
-                <span class="navbar-brand"><i class="fas fa-hard-hat me-2"></i>منصة المقاولات والديكور</span>
-                <div class="d-flex align-items-center gap-3">
-                    <span id="syncStatus" class="text-info"><i class="fas fa-check-circle me-1"></i> جاهز</span>
+                <span class="navbar-brand d-flex align-items-center gap-2">
+                    <img id="headerLogo" src="" class="company-logo d-none" alt="Logo">
+                    <span id="headerTitle"><i class="fas fa-hard-hat me-2"></i>منصة المقاولات والديكور</span>
+                </span>
+                <div class="d-flex align-items-center gap-2">
+                    <span id="syncStatus" class="text-info me-2"><i class="fas fa-check-circle me-1"></i> جاهز</span>
+                    <button id="adminUsersBtn" class="btn btn-outline-warning btn-sm d-none" onclick="showPage('usersManagementPage')"><i class="fas fa-users-cog me-1"></i> المستخدمين والشعار</button>
                     <button class="btn btn-outline-light btn-sm" onclick="logout()"><i class="fas fa-sign-out-alt me-1"></i> خروج</button>
                 </div>
             </div>
         </nav>
-        <div class="container py-5">
-            <h2 class="text-center mb-5 fw-bold">اختر القسم للبدء</h2>
+        <div class="container py-4">
+            <h3 class="text-center mb-4 fw-bold">اختر القسم للبدء</h3>
             <div class="row g-4 justify-content-center">
-                <div class="col-md-5">
+                <div class="col-md-5" id="navContractingCard">
                     <div class="section-btn bg-contracting shadow" onclick="showPage('contractingPage')">
                         <i class="fas fa-city fa-2x mb-3"></i> مقاولات البناء
                     </div>
                 </div>
-                <div class="col-md-5">
+                <div class="col-md-5" id="navDecorCard">
                     <div class="section-btn bg-decor shadow" onclick="showPage('decorPage')">
                         <i class="fas fa-paint-roller fa-2x mb-3"></i> أعمال الديكور
                     </div>
@@ -89,7 +93,67 @@
         </div>
     </div>
 
-    <!-- 3. قسم مقاولات البناء -->
+    <!-- 3. لوحة إدارة المستخدمين والشعار (للآدمن فقط) -->
+    <div id="usersManagementPage" class="page">
+        <nav class="navbar navbar-dark bg-dark mb-4">
+            <div class="container">
+                <span class="navbar-brand"><i class="fas fa-user-shield me-2"></i>إدارة المستخدمين والشعار</span>
+                <button class="btn btn-light btn-sm" onclick="showPage('mainPage')"><i class="fas fa-arrow-right me-1"></i> الرئيسية</button>
+            </div>
+        </nav>
+        <div class="container">
+            <div class="row g-4">
+                <!-- إعدادات شعار الشركة -->
+                <div class="col-md-4">
+                    <div class="card card-custom p-3">
+                        <h5 class="fw-bold mb-3"><i class="fas fa-image me-2"></i>شعار الشركة</h5>
+                        <div class="text-center mb-3">
+                            <img id="logoPreview" src="" class="img-thumbnail d-none" style="max-height: 120px;">
+                            <p id="noLogoText" class="text-muted small">لا يوجد شعار مخصص حالياً</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small">اختر صورة الشعار</label>
+                            <input type="file" id="logoInput" class="form-control form-control-sm" accept="image/*" onchange="previewAndSaveLogo(event)">
+                        </div>
+                        <button class="btn btn-sm btn-outline-danger w-100" onclick="removeLogo()">حذف الشعار</button>
+                    </div>
+                </div>
+
+                <!-- إضافة وإدارة المستخدمين -->
+                <div class="col-md-8">
+                    <div class="card card-custom p-3 mb-4">
+                        <h5 class="fw-bold mb-3"><i class="fas fa-user-plus me-2"></i>إضافة مستخدم جديد وتحديد الصلاحيات</h5>
+                        <div class="row g-2">
+                            <div class="col-md-6 mb-2"><input type="text" class="form-control" id="newUsername" placeholder="اسم المستخدم"></div>
+                            <div class="col-md-6 mb-2"><input type="password" class="form-control" id="newPassword" placeholder="كلمة المرور"></div>
+                        </div>
+                        <div class="my-2">
+                            <label class="fw-bold small mb-2">الصلاحيات المتاحة للمستخدم:</label>
+                            <div class="d-flex flex-wrap gap-3">
+                                <div class="form-check"><input class="form-check-input" type="checkbox" id="permContracting" checked><label class="form-check-label small" for="permContracting">قسم المقاولات</label></div>
+                                <div class="form-check"><input class="form-check-input" type="checkbox" id="permDecor" checked><label class="form-check-label small" for="permDecor">قسم الديكور</label></div>
+                                <div class="form-check"><input class="form-check-input" type="checkbox" id="permEdit" checked><label class="form-check-label small" for="permEdit">التعديل (مشاريع/مواد)</label></div>
+                                <div class="form-check"><input class="form-check-input" type="checkbox" id="permDelete" checked><label class="form-check-label small" for="permDelete">الحذف</label></div>
+                            </div>
+                        </div>
+                        <button class="btn btn-success mt-2" onclick="addNewUser()"><i class="fas fa-save me-1"></i> حفظ المستخدم</button>
+                    </div>
+
+                    <div class="card card-custom p-3">
+                        <h5 class="fw-bold mb-3"><i class="fas fa-users me-2"></i>قائمة المستخدمين</h5>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead><tr><th>اسم المستخدم</th><th>الدور</th><th>الصلاحيات</th><th>إجراء</th></tr></thead>
+                                <tbody id="usersTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. قسم مقاولات البناء -->
     <div id="contractingPage" class="page">
         <nav class="navbar navbar-dark bg-primary mb-4">
             <div class="container">
@@ -98,18 +162,27 @@
             </div>
         </nav>
         <div class="container">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h4>قائمة المشاريع السحابية</h4>
-                <div class="d-flex gap-2">
-                    <button class="btn btn-outline-primary btn-sm" onclick="loadProjectsFromDrive()"><i class="fas fa-sync me-1"></i> تحديث البيانات</button>
-                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#newProjectModal" onclick="openAddProjectModal()"><i class="fas fa-plus me-1"></i> إضافة مشروع جديد</button>
+            <div class="row align-items-center mb-4 g-2">
+                <div class="col-md-5">
+                    <h4 class="mb-0">قائمة المشاريع السحابية</h4>
+                </div>
+                <!-- مربع البحث عن مشروع -->
+                <div class="col-md-4">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" id="searchProjectInput" class="form-control" placeholder="بحث باسم المشروع..." onkeyup="filterProjects()">
+                    </div>
+                </div>
+                <div class="col-md-3 text-end d-flex gap-1 justify-content-end">
+                    <button class="btn btn-outline-primary btn-sm" onclick="loadDataFromDrive()"><i class="fas fa-sync me-1"></i> تحديث</button>
+                    <button id="addProjectBtn" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#newProjectModal" onclick="openAddProjectModal()"><i class="fas fa-plus me-1"></i> مشروع جديد</button>
                 </div>
             </div>
             <div class="row" id="projectsList"></div>
         </div>
     </div>
 
-    <!-- 4. تفاصيل المشروع -->
+    <!-- 5. تفاصيل المشروع -->
     <div id="projectDetailsPage" class="page">
         <nav class="navbar navbar-dark bg-secondary mb-4">
             <div class="container">
@@ -124,15 +197,21 @@
                 <div class="col-md-4"><div class="card p-3 bg-success text-white text-center"><h5>المبلغ المتبقي</h5><h3 id="projRemainingCost">0</h3></div></div>
             </div>
 
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5>مواد ومشتريات البناء</h5>
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addMaterialModal"><i class="fas fa-cart-plus me-1"></i> إضافة مادة جديدة</button>
+            <div class="row align-items-center mb-3 g-2">
+                <div class="col-md-6"><h5>مواد ومشتريات البناء</h5></div>
+                <!-- مربع البحث عن المشتريات -->
+                <div class="col-md-4">
+                    <input type="text" id="searchMaterialInput" class="form-control form-control-sm" placeholder="بحث باسم المادة..." onkeyup="filterMaterials()">
+                </div>
+                <div class="col-md-2 text-end">
+                    <button id="addMaterialBtn" class="btn btn-primary btn-sm w-100" data-bs-toggle="modal" data-bs-target="#addMaterialModal"><i class="fas fa-cart-plus me-1"></i> إضافة مادة</button>
+                </div>
             </div>
 
             <div class="table-responsive bg-white p-3 rounded shadow-sm">
                 <table class="table table-hover">
                     <thead class="table-light">
-                        <tr><th>#</th><th>اسم المادة</th><th>القيمة</th><th>تاريخ الشراء</th><th>إجراء</th></tr>
+                        <tr><th>#</th><th>اسم المادة</th><th>القيمة</th><th>تاريخ الشراء</th><th class="action-col">إجراء</th></tr>
                     </thead>
                     <tbody id="materialsTableBody"></tbody>
                 </table>
@@ -140,7 +219,7 @@
         </div>
     </div>
 
-    <!-- 5. قسم الديكور -->
+    <!-- 6. قسم الديكور -->
     <div id="decorPage" class="page">
         <nav class="navbar navbar-dark bg-warning text-dark mb-4">
             <div class="container">
@@ -168,6 +247,7 @@
                 <div class="col-md-7">
                     <div id="printableArea" class="printable-invoice">
                         <div class="text-center mb-4 border-bottom pb-3">
+                            <img id="invoiceLogoImg" src="" class="invoice-logo d-none mb-2" alt="Logo">
                             <h3 class="fw-bold">فاتورة / عقد عمل ديكور</h3>
                             <p class="text-muted mb-0">قسم الديكور والتصميم الداخلي</p>
                         </div>
@@ -199,10 +279,7 @@
     <div class="modal fade" id="newProjectModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="projectModalTitle">إضافة مشروع مقاولات جديد</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
+                <div class="modal-header"><h5 class="modal-title" id="projectModalTitle">مشروع مقاولات</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
                 <div class="modal-body">
                     <input type="hidden" id="editingProjectId">
                     <div class="mb-3"><label class="form-label">اسم المشروع</label><input type="text" class="form-control" id="pName"></div>
@@ -232,268 +309,16 @@
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw4ylt5kzWd6M-DK6xOUcXCUQTDfz2np26Fpr1e4DmlrbT0IBOTkYNjbpTYfMCI07fZ/exec";
         
-        let projects = [];
-        let activeProjectId = null;
-
-        // التحقق السريع من حالة الجلسة دون تجميد الواجهة
-        window.onload = function() {
-            try {
-                if (localStorage.getItem('app_logged_in') === 'true') {
-                    showPage('mainPage');
-                } else {
-                    showPage('loginPage');
-                }
-            } catch(e) {
-                showPage('loginPage');
-            }
+        // الهيكل الرئيسي للبيانات
+        let dbData = {
+            projects: [],
+            users: [
+                { username: 'admin', password: '123', role: 'admin', perms: { contracting: true, decor: true, edit: true, delete: true } }
+            ],
+            logo: ""
         };
 
-        function showPage(pageId) {
-            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-            const target = document.getElementById(pageId);
-            if(target) target.classList.add('active');
-            
-            if(pageId === 'contractingPage' || pageId === 'mainPage') {
-                loadProjectsFromDrive();
-            }
-        }
+        let currentUser = null;
+        let activeProjectId = null;
 
-        function forceLogin() {
-            try {
-                localStorage.setItem('app_logged_in', 'true');
-            } catch(e) {}
-            showPage('mainPage');
-        }
-
-        function logout() {
-            try {
-                localStorage.removeItem('app_logged_in');
-            } catch(e) {}
-            showPage('loginPage');
-        }
-
-        function loadProjectsFromDrive() {
-            const statusEl = document.getElementById('syncStatus');
-            if(statusEl) statusEl.innerHTML = '<i class="fas fa-sync fa-spin me-1"></i> جاري جلب البيانات...';
-            
-            fetch(SCRIPT_URL)
-                .then(response => response.json())
-                .then(data => {
-                    if(Array.isArray(data)) {
-                        projects = data;
-                    } else {
-                        projects = [];
-                    }
-                    renderProjects();
-                    if(statusEl) statusEl.innerHTML = '<i class="fas fa-check-circle me-1"></i> متصل بالسحابة';
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    if(statusEl) statusEl.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i> خطأ بالاتصال';
-                    renderProjects();
-                });
-        }
-
-        function saveProjectsToDrive() {
-            const statusEl = document.getElementById('syncStatus');
-            if(statusEl) statusEl.innerHTML = '<i class="fas fa-sync fa-spin me-1"></i> جاري الحفظ بالسحابة...';
-
-            fetch(SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(projects)
-            })
-            .then(() => {
-                if(statusEl) statusEl.innerHTML = '<i class="fas fa-check-circle me-1"></i> تم الحفظ بنجاح';
-                setTimeout(() => {
-                    if(statusEl) statusEl.innerHTML = '<i class="fas fa-check-circle me-1"></i> متصل بالسحابة';
-                }, 2000);
-                renderProjects();
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                if(statusEl) statusEl.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i> فشل الحفظ';
-            });
-        }
-
-        function openAddProjectModal() {
-            document.getElementById('projectModalTitle').innerText = 'إضافة مشروع مقاولات جديد';
-            document.getElementById('editingProjectId').value = '';
-            document.getElementById('pName').value = '';
-            document.getElementById('pTotal').value = '';
-        }
-
-        function editProject(id) {
-            const p = projects.find(item => item.id === id);
-            if(!p) return;
-            document.getElementById('projectModalTitle').innerText = 'تعديل مشروع المقاولات';
-            document.getElementById('editingProjectId').value = p.id;
-            document.getElementById('pName').value = p.name;
-            document.getElementById('pTotal').value = p.total;
-            
-            const modal = new bootstrap.Modal(document.getElementById('newProjectModal'));
-            modal.show();
-        }
-
-        function saveProject() {
-            const editingId = document.getElementById('editingProjectId').value;
-            const name = document.getElementById('pName').value;
-            const total = parseFloat(document.getElementById('pTotal').value);
-            if(!name || isNaN(total)) { alert('يرجى إدخال اسم المشروع والقيمة الإجمالية'); return; }
-
-            if(editingId) {
-                const p = projects.find(item => item.id == editingId);
-                if(p) {
-                    p.name = name;
-                    p.total = total;
-                }
-            } else {
-                projects.push({ id: Date.now(), name, total, materials: [] });
-            }
-
-            saveProjectsToDrive();
-            
-            const modalEl = document.getElementById('newProjectModal');
-            const instance = bootstrap.Modal.getInstance(modalEl);
-            if(instance) instance.hide();
-            document.getElementById('pName').value = '';
-            document.getElementById('pTotal').value = '';
-            document.getElementById('editingProjectId').value = '';
-        }
-
-        function deleteProject(id) {
-            if(confirm('هل أنت متأكد من حذف هذا المشروع نهائياً؟')) {
-                projects = projects.filter(item => item.id !== id);
-                saveProjectsToDrive();
-            }
-        }
-
-        function renderProjects() {
-            const list = document.getElementById('projectsList');
-            if(!list) return;
-            list.innerHTML = '';
-            if(projects.length === 0) {
-                list.innerHTML = '<div class="text-center text-muted py-4">لا توجد مشاريع سحابية مضافة حتى الآن.</div>';
-                return;
-            }
-            projects.forEach(p => {
-                const totalExpenses = p.materials ? p.materials.reduce((sum, m) => sum + m.cost, 0) : 0;
-                const remaining = p.total - totalExpenses;
-                list.innerHTML += `
-                    <div class="col-md-4 mb-3">
-                        <div class="card card-custom p-3 shadow-sm">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <h5 class="fw-bold text-primary mb-0">${p.name}</h5>
-                                <div class="dropdown">
-                                    <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="fas fa-ellipsis-v"></i></button>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="javascript:void(0);" onclick="editProject(${p.id})"><i class="fas fa-edit text-warning me-2"></i>تعديل</a></li>
-                                        <li><a class="dropdown-item" href="javascript:void(0);" onclick="deleteProject(${p.id})"><i class="fas fa-trash text-danger me-2"></i>حذف</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <hr>
-                            <p class="text-muted mb-1">الإجمالي: ${p.total} OMR</p>
-                            <p class="text-danger mb-1">المصروفات: ${totalExpenses} OMR</p>
-                            <p class="text-success mb-3 fw-bold">المتبقي: ${remaining} OMR</p>
-                            <button class="btn btn-outline-primary btn-sm w-100" onclick="openProjectDetails(${p.id})">فتح وتفاصيل المواد</button>
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        function openProjectDetails(id) {
-            activeProjectId = id;
-            const project = projects.find(p => p.id === id);
-            document.getElementById('currentProjectTitle').innerText = `مشروع: ${project.name}`;
-            renderProjectStats();
-            showPage('projectDetailsPage');
-        }
-
-        function renderProjectStats() {
-            const project = projects.find(p => p.id === activeProjectId);
-            if(!project) return;
-            const totalExpenses = project.materials ? project.materials.reduce((sum, m) => sum + m.cost, 0) : 0;
-            const remaining = project.total - totalExpenses;
-
-            document.getElementById('projTotalCost').innerText = project.total + ' OMR';
-            document.getElementById('projTotalExpenses').innerText = totalExpenses + ' OMR';
-            document.getElementById('projRemainingCost').innerText = remaining + ' OMR';
-
-            const table = document.getElementById('materialsTableBody');
-            table.innerHTML = '';
-            if(!project.materials) project.materials = [];
-            project.materials.forEach((m, idx) => {
-                table.innerHTML += `
-                    <tr>
-                        <td>${idx + 1}</td>
-                        <td>${m.name}</td>
-                        <td>${m.cost} OMR</td>
-                        <td>${m.date}</td>
-                        <td><button class="btn btn-danger btn-sm" onclick="deleteMaterial(${m.id})">حذف</button></td>
-                    </tr>
-                `;
-            });
-        }
-
-        function addNewMaterial() {
-            const name = document.getElementById('mName').value;
-            const cost = parseFloat(document.getElementById('mCost').value);
-            const date = document.getElementById('mDate').value;
-            if(!name || isNaN(cost) || !date) { alert('يرجى تعبئة كافة بيانات المادة'); return; }
-
-            const project = projects.find(p => p.id === activeProjectId);
-            if(!project.materials) project.materials = [];
-            project.materials.push({ id: Date.now(), name, cost, date });
-            
-            saveProjectsToDrive();
-            renderProjectStats();
-
-            const modalEl = document.getElementById('addMaterialModal');
-            const instance = bootstrap.Modal.getInstance(modalEl);
-            if(instance) instance.hide();
-            document.getElementById('mName').value = '';
-            document.getElementById('mCost').value = '';
-            document.getElementById('mDate').value = '';
-        }
-
-        function deleteMaterial(mId) {
-            const project = projects.find(p => p.id === activeProjectId);
-            project.materials = project.materials.filter(m => m.id !== mId);
-            saveProjectsToDrive();
-            renderProjectStats();
-        }
-
-        function generateDecorInvoice() {
-            const clientName = document.getElementById('decClientName').value || '-';
-            const workType = document.getElementById('decWorkType').value || '-';
-            const total = parseFloat(document.getElementById('decTotal').value) || 0;
-            const paid = parseFloat(document.getElementById('decPaid').value) || 0;
-            const notes = document.getElementById('decNotes').value || '-';
-
-            document.getElementById('viewClientName').innerText = clientName;
-            document.getElementById('viewWorkType').innerText = workType;
-            document.getElementById('viewTotal').innerText = total + ' OMR';
-            document.getElementById('viewPaid').innerText = paid + ' OMR';
-            document.getElementById('viewRemaining').innerText = (total - paid) + ' OMR';
-            document.getElementById('viewNotes').innerText = notes;
-            document.getElementById('viewDate').innerText = new Date().toLocaleDateString('ar-EG');
-        }
-
-        function sendWhatsApp() {
-            const phone = document.getElementById('decClientPhone').value;
-            if(!phone) { alert('يرجى إدخال رقم الهاتف أولاً'); return; }
-            const clientName = document.getElementById('decClientName').value;
-            const workType = document.getElementById('decWorkType').value;
-            const total = document.getElementById('decTotal').value;
-            const paid = document.getElementById('decPaid').value;
-            const remaining = total - paid;
-
-            const msg = `مرحباً بك ${clientName}، تفاصيل معاملة الديكور الخاصة بك:\n\n- نوع العمل: ${workType}\n- الإجمالي: ${total} OMR\n- المدفوع: ${paid} OMR\n- المتبقي: ${remaining} OMR\n\nشكراً لتعاملك معنا!`;
-            window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
-        }
-    </script>
-</body>
-</html>
+        window.onload = function() {
