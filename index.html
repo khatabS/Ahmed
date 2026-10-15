@@ -249,7 +249,7 @@
                 </div>
                 <div class="col-md-3 text-end d-flex gap-1 justify-content-end">
                     <button class="btn btn-outline-primary btn-sm" id="refreshProjectsBtn"><i class="fas fa-sync me-1"></i> تحديث</button>
-                    <button id="addProjectBtn" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#newProjectModal"><i class="fas fa-plus me-1"></i> مشروع جديد</button>
+                    <button id="addProjectBtn" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#newProjectModal" onclick="openAddProjectModal()"><i class="fas fa-plus me-1"></i> مشروع جديد</button>
                 </div>
             </div>
             <div class="row" id="projectsList"></div>
@@ -288,7 +288,7 @@
         </div>
     </div>
 
-    <!-- 7. قسم الديكور (مع البحث والبحث بالرقم المدني والهاتف) -->
+    <!-- 7. قسم الديكور -->
     <div id="decorPage" class="page">
         <nav class="navbar navbar-dark bg-warning text-dark mb-4">
             <div class="container">
@@ -417,7 +417,7 @@
     <div class="modal fade" id="newProjectModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
-                <div class="modal-header"><h5 class="modal-title" id="projectModalTitle">مشروع مقاولات</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-header"><h5 class="modal-title" id="projectModalTitle">مشروع مقاولات جديد</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
                 <div class="modal-body">
                     <input type="hidden" id="editingProjectId">
                     <div class="mb-3"><label class="form-label">اسم المشروع / العميل</label><input type="text" class="form-control" id="pName"></div>
@@ -978,7 +978,16 @@
                 list.innerHTML += `
                     <div class="col-md-4 mb-3">
                         <div class="card card-custom p-3 shadow-sm">
-                            <h5 class="fw-bold text-primary mb-0">${p.name}</h5>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="fw-bold text-primary mb-0">${p.name}</h5>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-light" type="button" data-bs-toggle="dropdown"><i class="fas fa-ellipsis-v"></i></button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="javascript:void(0);" onclick="editProject(${p.id})"><i class="fas fa-edit text-warning me-2"></i>تعديل</a></li>
+                                        <li><a class="dropdown-item" href="javascript:void(0);" onclick="deleteProject(${p.id})"><i class="fas fa-trash text-danger me-2"></i>حذف</a></li>
+                                    </ul>
+                                </div>
+                            </div>
                             <p class="small text-muted mb-0">الرقم المدني: ${p.civilId || '-'} | الهاتف: ${p.phone || '-'}</p>
                             <hr class="my-2">
                             <p class="text-muted mb-1">الإجمالي: ${p.total} OMR</p>
@@ -991,17 +1000,61 @@
             });
         }
 
+        function openAddProjectModal() {
+            document.getElementById('projectModalTitle').innerText = 'مشروع مقاولات جديد';
+            document.getElementById('editingProjectId').value = '';
+            document.getElementById('pName').value = '';
+            document.getElementById('pCivilId').value = '';
+            document.getElementById('pPhone').value = '';
+            document.getElementById('pTotal').value = '';
+        }
+
+        function editProject(id) {
+            const p = dbData.projects.find(item => item.id === id);
+            if(!p) return;
+            document.getElementById('projectModalTitle').innerText = 'تعديل بيانات المشروع';
+            document.getElementById('editingProjectId').value = p.id;
+            document.getElementById('pName').value = p.name || '';
+            document.getElementById('pCivilId').value = p.civilId || '';
+            document.getElementById('pPhone').value = p.phone || '';
+            document.getElementById('pTotal').value = p.total || 0;
+            
+            const modal = new bootstrap.Modal(document.getElementById('newProjectModal'));
+            modal.show();
+        }
+
         function saveProject() {
+            const editingId = document.getElementById('editingProjectId').value;
             const name = document.getElementById('pName').value.trim();
             const civilId = document.getElementById('pCivilId').value.trim();
             const phone = document.getElementById('pPhone').value.trim();
             const total = parseFloat(document.getElementById('pTotal').value);
+            
             if(!name || isNaN(total)) { alert('يرجى إدخال اسم المشروع والقيمة الإجمالية على الأقل'); return; }
 
-            dbData.projects.push({ id: Date.now(), name, civilId, phone, total, materials: [] });
+            if(editingId) {
+                const p = dbData.projects.find(item => item.id == editingId);
+                if(p) {
+                    p.name = name;
+                    p.civilId = civilId;
+                    p.phone = phone;
+                    p.total = total;
+                }
+            } else {
+                dbData.projects.push({ id: Date.now(), name, civilId, phone, total, materials: [] });
+            }
+
             saveDataToDrive();
             renderProjects();
             bootstrap.Modal.getInstance(document.getElementById('newProjectModal')).hide();
+        }
+
+        function deleteProject(id) {
+            if(confirm('هل أنت متأكد من حذف هذا المشروع نهائياً؟')) {
+                dbData.projects = dbData.projects.filter(item => item.id !== id);
+                saveDataToDrive();
+                renderProjects();
+            }
         }
 
         function openProjectDetails(id) {
