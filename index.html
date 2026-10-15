@@ -243,9 +243,9 @@
         </nav>
         <div class="container">
             <div class="row align-items-center mb-4 g-2">
-                <div class="col-md-5"><h4 class="mb-0">قائمة المشاريع السحابية</h4></div>
-                <div class="col-md-4">
-                    <input type="text" id="searchProjectInput" class="form-control form-control-sm" placeholder="بحث...">
+                <div class="col-md-4"><h4 class="mb-0">قائمة المشاريع</h4></div>
+                <div class="col-md-5">
+                    <input type="text" id="searchProjectInput" class="form-control form-control-sm" placeholder="بحث باسم المشروع، الرقم المدني، أو الهاتف...">
                 </div>
                 <div class="col-md-3 text-end d-flex gap-1 justify-content-end">
                     <button class="btn btn-outline-primary btn-sm" id="refreshProjectsBtn"><i class="fas fa-sync me-1"></i> تحديث</button>
@@ -288,7 +288,7 @@
         </div>
     </div>
 
-    <!-- 7. قسم الديكور -->
+    <!-- 7. قسم الديكور (مع البحث والبحث بالرقم المدني والهاتف) -->
     <div id="decorPage" class="page">
         <nav class="navbar navbar-dark bg-warning text-dark mb-4">
             <div class="container">
@@ -297,13 +297,20 @@
             </div>
         </nav>
         <div class="container">
+            <div class="row mb-3 no-print">
+                <div class="col-md-6 offset-md-3">
+                    <input type="text" id="searchDecorInput" class="form-control" placeholder="🔍 بحث عن عميل سابق (بالاسم، الرقم المدني، أو رقم الهاتف)..." onkeyup="filterDecorInvoices()">
+                </div>
+            </div>
+
             <div class="row">
                 <div class="col-md-5 mb-4 no-print">
                     <div class="card card-custom p-4">
                         <h5 class="fw-bold mb-3"><i class="fas fa-file-invoice me-2"></i>تفاصيل فاتورة الديكور</h5>
                         
                         <div class="mb-2"><label class="form-label small fw-bold">اسم العميل</label><input type="text" class="form-control form-control-sm" id="decClientName"></div>
-                        <div class="mb-2"><label class="form-label small fw-bold">رقم الواتساب</label><input type="text" class="form-control form-control-sm" id="decClientPhone" placeholder="96899000000"></div>
+                        <div class="mb-2"><label class="form-label small fw-bold">الرقم المدني</label><input type="text" class="form-control form-control-sm" id="decCivilId" placeholder="أدخل الرقم المدني"></div>
+                        <div class="mb-2"><label class="form-label small fw-bold">رقم الهاتف / الواتساب</label><input type="text" class="form-control form-control-sm" id="decClientPhone" placeholder="96899000000"></div>
                         <div class="mb-3"><label class="form-label small fw-bold">المبلغ المدفوع مقدمًا</label><input type="number" class="form-control form-control-sm" id="decPaid" value="0"></div>
                         
                         <hr>
@@ -351,9 +358,13 @@
                             </div>
                         </div>
 
-                        <div class="row mb-3">
+                        <div class="row mb-2" style="font-size: 0.85rem;">
                             <div class="col-6"><strong>التاريخ:</strong> <span id="viewDate">-</span></div>
                             <div class="col-6 text-end"><strong>العميل:</strong> <span id="viewClientName">-</span></div>
+                        </div>
+                        <div class="row mb-3" style="font-size: 0.85rem;">
+                            <div class="col-6"><strong>الرقم المدني:</strong> <span id="viewCivilId">-</span></div>
+                            <div class="col-6 text-end"><strong>الهاتف:</strong> <span id="viewClientPhone">-</span></div>
                         </div>
 
                         <table class="table table-bordered my-3 align-middle text-center" style="font-size: 0.9rem;">
@@ -409,7 +420,9 @@
                 <div class="modal-header"><h5 class="modal-title" id="projectModalTitle">مشروع مقاولات</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
                 <div class="modal-body">
                     <input type="hidden" id="editingProjectId">
-                    <div class="mb-3"><label class="form-label">اسم المشروع</label><input type="text" class="form-control" id="pName"></div>
+                    <div class="mb-3"><label class="form-label">اسم المشروع / العميل</label><input type="text" class="form-control" id="pName"></div>
+                    <div class="mb-3"><label class="form-label">الرقم المدني</label><input type="text" class="form-control" id="pCivilId" placeholder="أدخل الرقم المدني"></div>
+                    <div class="mb-3"><label class="form-label">رقم الهاتف</label><input type="text" class="form-control" id="pPhone" placeholder="أدخل رقم الهاتف"></div>
                     <div class="mb-3"><label class="form-label">القيمة الإجمالية للمشروع</label><input type="number" class="form-control" id="pTotal"></div>
                     <button type="button" class="btn btn-primary w-100" id="saveProjectBtn"><i class="fas fa-save me-1"></i> حفظ المشروع سحابياً</button>
                 </div>
@@ -451,12 +464,10 @@
         let activeProjectId = null;
         let currentDecorItems = [];
 
-        // تشغيل آمن ومباشر لجميع الأحداث عبر المتصفح
         document.addEventListener("DOMContentLoaded", function() {
             initLocalData();
             checkSession();
 
-            // ربط أزرار التنقل وتسجيل الدخول بشكل برمجي آمن
             document.getElementById('loginSubmitBtn').addEventListener('click', doLogin);
             document.getElementById('logoutBtn').addEventListener('click', doLogout);
             document.getElementById('goToContracting').addEventListener('click', () => showPage('contractingPage'));
@@ -567,7 +578,6 @@
 
         function applyUserPermissions() {
             if(!currentUser) return;
-
             const adminBtn = document.getElementById('adminUsersBtn');
             const reportsBtn = document.getElementById('adminReportsBtn');
 
@@ -690,10 +700,14 @@
 
         function generateDecorInvoice() {
             const clientName = document.getElementById('decClientName').value || '-';
+            const civilId = document.getElementById('decCivilId').value || '-';
+            const phone = document.getElementById('decClientPhone').value || '-';
             const paid = parseFloat(document.getElementById('decPaid').value) || 0;
             const notes = document.getElementById('decNotes').value || '-';
 
             document.getElementById('viewClientName').innerText = clientName;
+            document.getElementById('viewCivilId').innerText = civilId;
+            document.getElementById('viewClientPhone').innerText = phone;
             document.getElementById('viewNotes').innerText = notes;
             document.getElementById('viewDate').innerText = new Date().toLocaleDateString('ar-EG');
 
@@ -726,8 +740,27 @@
             document.getElementById('viewRemaining').innerText = remaining + ' OMR';
 
             if(!dbData.decorInvoices) dbData.decorInvoices = [];
-            dbData.decorInvoices.push({ id: Date.now(), clientName, items: currentDecorItems, total: totalGrand, paid, date: new Date().toISOString() });
+            dbData.decorInvoices.push({ id: Date.now(), clientName, civilId, phone, items: currentDecorItems, total: totalGrand, paid, date: new Date().toISOString() });
             saveDataToDrive();
+        }
+
+        function filterDecorInvoices() {
+            const query = document.getElementById('searchDecorInput').value.toLowerCase();
+            if(!query) return;
+            const found = (dbData.decorInvoices || []).find(d => 
+                (d.clientName && d.clientName.toLowerCase().includes(query)) ||
+                (d.civilId && d.civilId.toLowerCase().includes(query)) ||
+                (d.phone && d.phone.toLowerCase().includes(query))
+            );
+            if(found) {
+                document.getElementById('decClientName').value = found.clientName || '';
+                document.getElementById('decCivilId').value = found.civilId || '';
+                document.getElementById('decClientPhone').value = found.phone || '';
+                document.getElementById('decPaid').value = found.paid || 0;
+                currentDecorItems = found.items || [];
+                renderDecorItemsInputTable();
+                generateDecorInvoice();
+            }
         }
 
         function sendWhatsApp() {
@@ -927,7 +960,13 @@
             list.innerHTML = '';
 
             let filtered = dbData.projects || [];
-            if(query) filtered = filtered.filter(p => p.name.toLowerCase().includes(query));
+            if(query) {
+                filtered = filtered.filter(p => 
+                    (p.name && p.name.toLowerCase().includes(query)) ||
+                    (p.civilId && p.civilId.toLowerCase().includes(query)) ||
+                    (p.phone && p.phone.toLowerCase().includes(query))
+                );
+            }
 
             if(filtered.length === 0) {
                 list.innerHTML = '<div class="text-center text-muted py-4">لا توجد مشاريع مطابقة للبحث.</div>';
@@ -940,7 +979,8 @@
                     <div class="col-md-4 mb-3">
                         <div class="card card-custom p-3 shadow-sm">
                             <h5 class="fw-bold text-primary mb-0">${p.name}</h5>
-                            <hr>
+                            <p class="small text-muted mb-0">الرقم المدني: ${p.civilId || '-'} | الهاتف: ${p.phone || '-'}</p>
+                            <hr class="my-2">
                             <p class="text-muted mb-1">الإجمالي: ${p.total} OMR</p>
                             <p class="text-danger mb-1">المصروفات: ${totalExp} OMR</p>
                             <p class="text-success mb-3 fw-bold">المتبقي: ${p.total - totalExp} OMR</p>
@@ -953,10 +993,12 @@
 
         function saveProject() {
             const name = document.getElementById('pName').value.trim();
+            const civilId = document.getElementById('pCivilId').value.trim();
+            const phone = document.getElementById('pPhone').value.trim();
             const total = parseFloat(document.getElementById('pTotal').value);
-            if(!name || isNaN(total)) { alert('يرجى إدخال البيانات كاملة'); return; }
+            if(!name || isNaN(total)) { alert('يرجى إدخال اسم المشروع والقيمة الإجمالية على الأقل'); return; }
 
-            dbData.projects.push({ id: Date.now(), name, total, materials: [] });
+            dbData.projects.push({ id: Date.now(), name, civilId, phone, total, materials: [] });
             saveDataToDrive();
             renderProjects();
             bootstrap.Modal.getInstance(document.getElementById('newProjectModal')).hide();
@@ -965,7 +1007,7 @@
         function openProjectDetails(id) {
             activeProjectId = id;
             const project = dbData.projects.find(p => p.id === id);
-            document.getElementById('currentProjectTitle').innerText = `مشروع: ${project.name}`;
+            document.getElementById('currentProjectTitle').innerText = `مشروع: ${project.name} (المدني: ${project.civilId || '-'})`;
             renderProjectStats();
             showPage('projectDetailsPage');
         }
