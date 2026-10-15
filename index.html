@@ -41,8 +41,7 @@
     <div id="loginPage" class="page active">
         <div class="container min-vh-100 d-flex align-items-center justify-content-center">
             <div class="card card-custom p-4 col-md-5 col-lg-4 text-center">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <button class="btn btn-sm btn-outline-danger" type="button" onclick="clearSystemCache()"><i class="fas fa-trash me-1"></i> إعادة ضبط الذاكرة</button>
+                <div class="d-flex justify-content-end mb-3">
                     <button class="btn btn-sm btn-outline-secondary" type="button" onclick="toggleLanguage()"><i class="fas fa-globe me-1"></i> <span class="lang-toggle-text">English</span></button>
                 </div>
                 <div id="loginLogoContainer" class="mb-3">
@@ -62,11 +61,6 @@
                 </div>
                 
                 <button type="button" onclick="doLogin()" class="btn btn-primary w-100 py-2 fw-bold mb-2" data-i18n="btnLogin">تسجيل الدخول</button>
-                <button type="button" onclick="forceDirectLogin()" class="btn btn-outline-success w-100 py-2 fw-bold mb-2"><i class="fas fa-bolt me-1"></i> دخول مباشر سريع (آدمن)</button>
-                
-                <div class="text-center mt-2">
-                    <a href="javascript:void(0);" onclick="openForgotAdminModal()" class="text-decoration-none small text-muted"><i class="fas fa-key me-1"></i><span data-i18n="forgotAdminPass">نسيت كلمة مرور الآدمن؟</span></a>
-                </div>
             </div>
         </div>
     </div>
@@ -105,7 +99,7 @@
         </div>
     </div>
 
-    <!-- 3. التقارير المالية -->
+    <!-- 3. التقارير المالية المتطورة -->
     <div id="reportsPage" class="page">
         <nav class="navbar navbar-dark bg-dark mb-4">
             <div class="container">
@@ -114,12 +108,42 @@
             </div>
         </nav>
         <div class="container">
+            <!-- أدوات الفلترة وتحديد الفترة -->
+            <div class="card card-custom p-3 mb-4 no-print">
+                <h5 class="fw-bold mb-3"><i class="fas fa-filter me-2"></i>خيارات فلترة التقرير</h5>
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-3">
+                        <label class="form-label small">نوع التقرير</label>
+                        <select id="reportPeriodType" class="form-select form-select-sm" onchange="handlePeriodTypeChange()">
+                            <option value="all">الشامل (الكل)</option>
+                            <option value="daily">تقرير يومي</option>
+                            <option value="weekly">تقرير أسبوعي</option>
+                            <option value="monthly">تقرير شهري</option>
+                            <option value="yearly">تقرير سنوي</option>
+                            <option value="custom">تحديد تاريخ مخصص</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 custom-date-box d-none" id="startDateBox">
+                        <label class="form-label small">من تاريخ</label>
+                        <input type="date" id="reportStartDate" class="form-control form-control-sm">
+                    </div>
+                    <div class="col-md-3 custom-date-box d-none" id="endDateBox">
+                        <label class="form-label small">إلى تاريخ</label>
+                        <input type="date" id="reportEndDate" class="form-control form-control-sm">
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-primary btn-sm w-100" onclick="generateReports()"><i class="fas fa-search me-1"></i> تطبيق الفلترة وعرض التقرير</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- عرض التقرير المطبوع -->
             <div id="reportsPrintArea" class="bg-white p-4 rounded shadow-sm">
                 <div class="text-center mb-4 border-bottom pb-3">
                     <img id="reportLogoImg" src="" class="invoice-logo d-none mb-2" alt="Logo">
                     <h3 class="fw-bold" id="reportCompanyTitle">اسم الشركة</h3>
-                    <h5 class="text-muted" data-i18n="summaryReportTitle">تقرير الأداء المالي الشامل</h5>
-                    <p class="small text-secondary mb-0"><span data-i18n="reportGenDate">تاريخ الاستخراج:</span> <span id="reportGenDateValue"></span></p>
+                    <h5 class="text-muted" id="reportSubTitle">تقرير الأداء المالي الشامل</h5>
+                    <p class="small text-secondary mb-0"><span data-i18n="reportGenDate">تاريخ الاستخراج:</span> <span id="reportGenDateValue"></span> | <span id="reportRangeLabel">الفترة: الكل</span></p>
                 </div>
 
                 <h5 class="fw-bold text-primary mb-3"><i class="fas fa-building me-2"></i><span data-i18n="contractingSummary">ملخص قسم المقاولات</span></h5>
@@ -316,20 +340,6 @@
     </div>
 
     <!-- Modals -->
-    <div class="modal fade" id="forgotAdminModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header"><h5 class="modal-title" data-i18n="resetAdminPassTitle">إعادة تعيين كلمة مرور الآدمن</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-                <div class="modal-body">
-                    <p class="small text-muted mb-3" data-i18n="resetAdminPassDesc">ادخل كود الأمان المرجعي (الكود الافتراضي: ADMIN-RESET-2026)</p>
-                    <div class="mb-3"><label class="form-label small" data-i18n="secCode">كود الأمان</label><input type="password" id="resetSecCode" class="form-control" placeholder="ADMIN-RESET-2026"></div>
-                    <div class="mb-3"><label class="form-label small" data-i18n="newPassword">كلمة المرور الجديدة</label><input type="password" id="resetNewPass" class="form-control"></div>
-                    <button type="button" class="btn btn-danger w-100" onclick="resetAdminPassword()"><i class="fas fa-check-circle me-1"></i> <span data-i18n="btnResetPass">تحديث كلمة المرور</span></button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <div class="modal fade" id="newProjectModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -362,7 +372,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw4ylt5kzWd6M-DK6xOUcXCUQTDfz2np26Fpr1e4DmlrbT0IBOTkYNjbpTYfMCI07fZ/exec";
-        const ADMIN_RESET_CODE = "ADMIN-RESET-2026";
         
         let currentLang = localStorage.getItem('app_lang') || 'ar';
 
@@ -382,64 +391,44 @@
         const i18n = {
             ar: {
                 loginSub: "تسجيل الدخول للنظام الإداري", username: "اسم المستخدم", password: "كلمة المرور", btnLogin: "تسجيل الدخول",
-                forgotAdminPass: "نسيت كلمة مرور الآدمن؟", btnReports: "التقارير المالية", btnSettings: "الإعدادات والمستخدمين",
-                btnLogout: "خروج", chooseSection: "اختر القسم للبدء", secContracting: "مقاولات البناء", secDecor: "أعمال الديكور والتصميم",
-                btnMain: "الرئيسية", reportsTitle: "التقارير المالية والإحصائيات", reportPeriod: "فترة التقرير", summaryReportTitle: "تقرير الأداء المالي الشامل",
-                reportGenDate: "تاريخ الاستخراج:", contractingSummary: "ملخص قسم المقاولات", repTotalProjectsVal: "إجمالي قيمة المشاريع",
-                repTotalExpenses: "إجمالي مصروفات المواد", repExpectedProfit: "صافي المتبقي / الأرباح", decorSummary: "ملخص قسم الديكور",
-                repDecorTotal: "إجمالي عقود الديكور", repDecorPaid: "إجمالي المبالغ المحصلة", repDecorRemaining: "المبالغ المتبقية للتحصيل",
-                btnPrintReport: "طباعة التقرير", settingsTitle: "إدارة النظام والمستخدمين", companyIdentity: "هوية الشركة",
-                companyName: "اسم الشركة / المؤسسة", btnSaveName: "حفظ الاسم", companyLogo: "شعار الشركة", noLogo: "لا يوجد شعار مخصص حالياً",
-                btnDeleteLogo: "حذف الشعار", addUserTitle: "إضافة مستخدم جديد وصلاحياته", permsTitle: "الصلاحيات:", permContracting: "قسم المقاولات",
-                permDecor: "قسم الديكور", permEdit: "التعديل", permDelete: "الحذف", btnSaveUser: "حفظ المستخدم", usersListTitle: "قائمة المستخدمين",
-                thUser: "المستخدم", thRole: "الدور", thPerms: "الصلاحيات", thAction: "إجراء", cloudProjectsList: "قائمة المشاريع السحابية",
-                btnRefresh: "تحديث", btnNewProject: "مشروع جديد", btnBackProjects: "رجوع للمشاريع", projTotalCost: "إجمالي قيمة المشروع",
-                projExpenses: "إجمالي المصروفات", projRemaining: "المبلغ المتبقي", buildingMaterials: "مواد ومشتريات البناء", btnAddMaterial: "إضافة مادة",
-                thMatName: "اسم المادة", thCost: "القيمة", thDate: "التاريخ", decorInputTitle: "إدخال تفاصيل معاملة ديكور", clientName: "اسم العميل",
-                clientPhone: "رقم الواتساب", workType: "نوع الخدمة", totalCost: "التكلفة الإجمالية", paidAmount: "المبلغ المدفوع", notes: "ملاحظات وشروط",
-                btnUpdateInvoice: "تحديث المعاينة وتدقيق الحفظ", decorInvoiceTitle: "فاتورة / عقد عمل ديكور", thDesc: "الوصف", thanksMsg: "شكراً لتعاملكم معنا!",
-                btnSendWA: "إرسال عبر الواتساب", btnPrint: "طباعة الفاتورة", resetAdminPassTitle: "إعادة تعيين كلمة مرور الآدمن",
-                resetAdminPassDesc: "يرجى إدخال كود الأمان المرجعي لاستعادة الحساب (الكود الافتراضي: ADMIN-RESET-2026)", secCode: "كود الأمان",
-                newPassword: "كلمة المرور الجديدة", btnResetPass: "تحديث كلمة المرور", projName: "اسم المشروع", btnSaveProject: "حفظ المشروع سحابياً",
-                addMaterialTitle: "إضافة مادة بناء جديدة", btnSaveMaterial: "حفظ المادة سحابياً"
+                btnReports: "التقارير المالية", btnSettings: "الإعدادات والمستخدمين", btnLogout: "خروج", chooseSection: "اختر القسم للبدء",
+                secContracting: "مقاولات البناء", secDecor: "أعمال الديكور والتصميم", btnMain: "الرئيسية", reportsTitle: "التقارير المالية والإحصائيات",
+                summaryReportTitle: "تقرير الأداء المالي الشامل", reportGenDate: "تاريخ الاستخراج:", contractingSummary: "ملخص قسم المقاولات",
+                repTotalProjectsVal: "إجمالي قيمة المشاريع", repTotalExpenses: "إجمالي مصروفات المواد", repExpectedProfit: "صافي المتبقي / الأرباح",
+                decorSummary: "ملخص قسم الديكور", repDecorTotal: "إجمالي عقود الديكور", repDecorPaid: "إجمالي المبالغ المحصلة", repDecorRemaining: "المبالغ المتبقية للتحصيل",
+                btnPrintReport: "طباعة التقرير", settingsTitle: "إدارة النظام والمستخدمين", companyIdentity: "هوية الشركة", companyName: "اسم الشركة / المؤسسة",
+                btnSaveName: "حفظ الاسم", companyLogo: "شعار الشركة", noLogo: "لا يوجد شعار مخصص حالياً", btnDeleteLogo: "حذف الشعار",
+                addUserTitle: "إضافة مستخدم جديد وصلاحياته", permsTitle: "الصلاحيات:", permContracting: "قسم المقاولات", permDecor: "قسم الديكور",
+                permEdit: "التعديل", permDelete: "الحذف", btnSaveUser: "حفظ المستخدم", usersListTitle: "قائمة المستخدمين", thUser: "المستخدم",
+                thRole: "الدور", thPerms: "الصلاحيات", thAction: "إجراء", cloudProjectsList: "قائمة المشاريع السحابية", btnRefresh: "تحديث",
+                btnNewProject: "مشروع جديد", btnBackProjects: "رجوع للمشاريع", projTotalCost: "إجمالي قيمة المشروع", projExpenses: "إجمالي المصروفات",
+                projRemaining: "المبلغ المتبقي", buildingMaterials: "مواد ومشتريات البناء", btnAddMaterial: "إضافة مادة", thMatName: "اسم المادة",
+                thCost: "القيمة", thDate: "التاريخ", decorInputTitle: "إدخال تفاصيل معاملة ديكور", clientName: "اسم العميل", clientPhone: "رقم الواتساب",
+                workType: "نوع الخدمة", totalCost: "التكلفة الإجمالية", paidAmount: "المبلغ المدفوع", notes: "ملاحظات وشروط", btnUpdateInvoice: "تحديث المعاينة",
+                decorInvoiceTitle: "فاتورة / عقد عمل ديكور", thDesc: "الوصف", thanksMsg: "شكراً لتعاملكم معنا!", btnSendWA: "إرسال عبر الواتساب",
+                btnPrint: "طباعة الفاتورة", projName: "اسم المشروع", btnSaveProject: "حفظ المشروع سحابياً", addMaterialTitle: "إضافة مادة بناء جديدة",
+                btnSaveMaterial: "حفظ المادة سحابياً"
             },
             en: {
                 loginSub: "Administrative System Login", username: "Username", password: "Password", btnLogin: "Login",
-                forgotAdminPass: "Forgot Admin Password?", btnReports: "Financial Reports", btnSettings: "Settings & Users",
-                btnLogout: "Logout", chooseSection: "Choose Section to Start", secContracting: "Building Contracting", secDecor: "Decor & Interior Design",
-                btnMain: "Main Menu", reportsTitle: "Financial Reports & Analytics", reportPeriod: "Report Period", summaryReportTitle: "Comprehensive Financial Performance Report",
-                reportGenDate: "Generated On:", contractingSummary: "Contracting Summary", repTotalProjectsVal: "Total Projects Value",
-                repTotalExpenses: "Total Material Expenses", repExpectedProfit: "Net Remaining / Profit", decorSummary: "Decor Summary",
-                repDecorTotal: "Total Decor Contracts", repDecorPaid: "Total Collected Amount", repDecorRemaining: "Remaining Balance to Collect",
-                btnPrintReport: "Print Report", settingsTitle: "System & User Management", companyIdentity: "Company Identity",
-                companyName: "Company / Business Name", btnSaveName: "Save Name", companyLogo: "Company Logo", noLogo: "No custom logo uploaded",
-                btnDeleteLogo: "Delete Logo", addUserTitle: "Add New User & Permissions", permsTitle: "Permissions:", permContracting: "Contracting Section",
-                permDecor: "Decor Section", permEdit: "Edit Rights", permDelete: "Delete Rights", btnSaveUser: "Save User", usersListTitle: "Users List",
-                thUser: "User", thRole: "Role", thPerms: "Permissions", thAction: "Action", cloudProjectsList: "Cloud Projects List",
-                btnRefresh: "Refresh", btnNewProject: "New Project", btnBackProjects: "Back to Projects", projTotalCost: "Total Project Value",
-                projExpenses: "Total Expenses", projRemaining: "Remaining Balance", buildingMaterials: "Building Materials & Purchases", btnAddMaterial: "Add Material",
-                thMatName: "Material Name", thCost: "Cost", thDate: "Date", decorInputTitle: "Enter Decor Transaction Details", clientName: "Client Name",
-                clientPhone: "WhatsApp Number", workType: "Service Type", totalCost: "Total Cost", paidAmount: "Paid Amount", notes: "Notes & Terms",
-                btnUpdateInvoice: "Update Preview", decorInvoiceTitle: "Decor Invoice / Contract", thDesc: "Description", thanksMsg: "Thank you for doing business with us!",
-                btnSendWA: "Send via WhatsApp", btnPrint: "Print Invoice", resetAdminPassTitle: "Reset Admin Password",
-                resetAdminPassDesc: "Please enter the security reset code (Default Code: ADMIN-RESET-2026)", secCode: "Security Code",
-                newPassword: "New Password", btnResetPass: "Update Password", projName: "Project Name", btnSaveProject: "Save Project to Cloud",
-                addMaterialTitle: "Add New Building Material", btnSaveMaterial: "Save Material to Cloud"
+                btnReports: "Financial Reports", btnSettings: "Settings & Users", btnLogout: "Logout", chooseSection: "Choose Section to Start",
+                secContracting: "Building Contracting", secDecor: "Decor & Interior Design", btnMain: "Main Menu", reportsTitle: "Financial Reports & Analytics",
+                summaryReportTitle: "Comprehensive Financial Performance Report", reportGenDate: "Generated On:", contractingSummary: "Contracting Summary",
+                repTotalProjectsVal: "Total Projects Value", repTotalExpenses: "Total Material Expenses", repExpectedProfit: "Net Remaining / Profit",
+                decorSummary: "Decor Summary", repDecorTotal: "Total Decor Contracts", repDecorPaid: "Total Collected Amount", repDecorRemaining: "Remaining Balance",
+                btnPrintReport: "Print Report", settingsTitle: "System & User Management", companyIdentity: "Company Identity", companyName: "Company Name",
+                btnSaveName: "Save Name", companyLogo: "Company Logo", noLogo: "No custom logo", btnDeleteLogo: "Delete Logo",
+                addUserTitle: "Add New User", permsTitle: "Permissions:", permContracting: "Contracting", permDecor: "Decor",
+                permEdit: "Edit", permDelete: "Delete", btnSaveUser: "Save User", usersListTitle: "Users List", thUser: "User",
+                thRole: "Role", thPerms: "Permissions", thAction: "Action", cloudProjectsList: "Cloud Projects List", btnRefresh: "Refresh",
+                btnNewProject: "New Project", btnBackProjects: "Back", projTotalCost: "Total Value", projExpenses: "Expenses",
+                projRemaining: "Remaining", buildingMaterials: "Building Materials", btnAddMaterial: "Add Material", thMatName: "Material Name",
+                thCost: "Cost", thDate: "Date", decorInputTitle: "Decor Transaction", clientName: "Client Name", clientPhone: "WhatsApp",
+                workType: "Service Type", totalCost: "Total Cost", paidAmount: "Paid", notes: "Notes", btnUpdateInvoice: "Update Preview",
+                decorInvoiceTitle: "Decor Invoice", thDesc: "Description", thanksMsg: "Thank you!", btnSendWA: "Send WhatsApp",
+                btnPrint: "Print", projName: "Project Name", btnSaveProject: "Save Project", addMaterialTitle: "Add Material", btnSaveMaterial: "Save Material"
             }
         };
-
-        function clearSystemCache() {
-            localStorage.clear();
-            alert('تم مسح الذاكرة المؤقتة بالكامل وتفريغ الجلسة! سيتم إعادة تحميل الصفحة الآن.');
-            window.location.reload();
-        }
-
-        function forceDirectLogin() {
-            currentUser = { username: 'admin', role: 'admin', perms: { contracting: true, decor: true, edit: true, delete: true } };
-            localStorage.setItem('app_user', 'admin');
-            applyUserPermissions();
-            showPage('mainPage');
-        }
 
         // تحميل أولي آمن
         (function initLocalData() {
@@ -467,13 +456,9 @@
         };
 
         function showPage(pageId) {
-            document.querySelectorAll('.page').forEach(page => {
-                page.classList.remove('active');
-            });
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
             const target = document.getElementById(pageId);
-            if(target) {
-                target.classList.add('active');
-            }
+            if(target) target.classList.add('active');
             
             if(pageId === 'contractingPage') renderProjects();
             if(pageId === 'usersManagementPage') renderUsersList();
@@ -517,8 +502,7 @@
                     return;
                 }
 
-                const customAdminPass = localStorage.getItem('admin_pass_override') || '123';
-                if((uInput === 'admin' && pInput === customAdminPass) || (uInput === 'admin' && pInput === '123')) {
+                if(uInput === 'admin' && pInput === '123') {
                     currentUser = { username: 'admin', role: 'admin', perms: { contracting: true, decor: true, edit: true, delete: true } };
                     localStorage.setItem('app_user', 'admin');
                     applyUserPermissions();
@@ -540,7 +524,7 @@
                     alert(currentLang === 'ar' ? 'اسم المستخدم أو كلمة المرور غير صحيحة!' : 'Invalid username or password!');
                 }
             } catch(e) {
-                forceDirectLogin();
+                alert('خطأ في عملية تسجيل الدخول');
             }
         }
 
@@ -670,39 +654,101 @@
             }
         }
 
-        function openForgotAdminModal() {
-            const modal = new bootstrap.Modal(document.getElementById('forgotAdminModal'));
-            modal.show();
+        function handlePeriodTypeChange() {
+            const val = document.getElementById('reportPeriodType').value;
+            const startBox = document.getElementById('startDateBox');
+            const endBox = document.getElementById('endDateBox');
+            if(val === 'custom') {
+                startBox.classList.remove('d-none');
+                endBox.classList.remove('d-none');
+            } else {
+                startBox.classList.add('d-none');
+                endBox.classList.add('d-none');
+            }
         }
 
-        function resetAdminPassword() {
-            const code = document.getElementById('resetSecCode').value.trim();
-            const newPass = document.getElementById('resetNewPass').value.trim();
+        function generateReports() {
+            const dateVal = document.getElementById('reportGenDateValue');
+            if(dateVal) dateVal.innerText = new Date().toLocaleDateString(currentLang === 'ar' ? 'ar-EG' : 'en-US');
+            
+            const periodType = document.getElementById('reportPeriodType').value;
+            const rangeLabel = document.getElementById('reportRangeLabel');
+            
+            const now = new Date();
+            let startDate = null;
+            let endDate = new Date();
 
-            if(code !== ADMIN_RESET_CODE) {
-                alert(currentLang === 'ar' ? 'كود الأمان المرجعي غير صحيح!' : 'Invalid Security Code!');
-                return;
-            }
-            if(!newPass) {
-                alert(currentLang === 'ar' ? 'يرجى كتابة كلمة المرور الجديدة' : 'Please enter a new password');
-                return;
-            }
-
-            localStorage.setItem('admin_pass_override', newPass);
-
-            if(!dbData.users) dbData.users = [];
-            let admin = dbData.users.find(u => u.username === 'admin');
-            if(admin) {
-                admin.password = newPass;
+            if(periodType === 'daily') {
+                startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                if(rangeLabel) rangeLabel.innerText = "الفترة: تقرير يومي (اليوم)";
+            } else if(periodType === 'weekly') {
+                startDate = new Date();
+                startDate.setDate(now.getDate() - 7);
+                if(rangeLabel) rangeLabel.innerText = "الفترة: تقرير أسبوعي (آخر 7 أيام)";
+            } else if(periodType === 'monthly') {
+                startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                if(rangeLabel) rangeLabel.innerText = "الفترة: تقرير شهري (الشهر الحالي)";
+            } else if(periodType === 'yearly') {
+                startDate = new Date(now.getFullYear(), 0, 1);
+                if(rangeLabel) rangeLabel.innerText = "الفترة: تقرير سنوي (السنة الحالية)";
+            } else if(periodType === 'custom') {
+                const sInput = document.getElementById('reportStartDate').value;
+                const eInput = document.getElementById('reportEndDate').value;
+                if(sInput) startDate = new Date(sInput);
+                if(eInput) {
+                    endDate = new Date(eInput);
+                    endDate.setHours(23, 59, 59);
+                }
+                if(rangeLabel) rangeLabel.innerText = `الفترة: من (${sInput || '-'}) إلى (${eInput || '-'})`;
             } else {
-                dbData.users.unshift({ username: 'admin', password: newPass, role: 'admin', perms: { contracting: true, decor: true, edit: true, delete: true } });
+                if(rangeLabel) rangeLabel.innerText = "الفترة: التقرير الشامل (الكل)";
             }
 
-            saveDataToDrive();
-            alert(currentLang === 'ar' ? 'تم تعيين كلمة مرور جديدة للآدمن بنجاح!' : 'Admin password reset successfully!');
-            const modalEl = document.getElementById('forgotAdminModal');
-            const instance = bootstrap.Modal.getInstance(modalEl);
-            if(instance) instance.hide();
+            let totalContractingVal = 0;
+            let totalContractingExp = 0;
+
+            (dbData.projects || []).forEach(p => {
+                totalContractingVal += parseFloat(p.total || 0);
+                if(p.materials) {
+                    p.materials.forEach(m => {
+                        let mDate = m.date ? new Date(m.date) : null;
+                        let includeMat = true;
+                        if(startDate && mDate && mDate < startDate) includeMat = false;
+                        if(endDate && mDate && mDate > endDate) includeMat = false;
+                        
+                        if(includeMat) {
+                            totalContractingExp += parseFloat(m.cost || 0);
+                        }
+                    });
+                }
+            });
+
+            const netContracting = totalContractingVal - totalContractingExp;
+
+            document.getElementById('repContractingTotal').innerText = totalContractingVal + ' OMR';
+            document.getElementById('repContractingExpenses').innerText = totalContractingExp + ' OMR';
+            document.getElementById('repContractingNet').innerText = netContracting + ' OMR';
+
+            let totalDecorVal = 0;
+            let totalDecorPaid = 0;
+
+            (dbData.decorInvoices || []).forEach(d => {
+                let dDate = d.date ? new Date(d.date) : null;
+                let includeDec = true;
+                if(startDate && dDate && dDate < startDate) includeDec = false;
+                if(endDate && dDate && dDate > endDate) includeDec = false;
+
+                if(includeDec) {
+                    totalDecorVal += parseFloat(d.total || 0);
+                    totalDecorPaid += parseFloat(d.paid || 0);
+                }
+            });
+
+            const remainingDecor = totalDecorVal - totalDecorPaid;
+
+            document.getElementById('repDecorTotalVal').innerText = totalDecorVal + ' OMR';
+            document.getElementById('repDecorPaidVal').innerText = totalDecorPaid + ' OMR';
+            document.getElementById('repDecorRemainingVal').innerText = remainingDecor + ' OMR';
         }
 
         function loadDataFromDrive() {
@@ -757,47 +803,6 @@
             .catch(err => {
                 if(statusEl) statusEl.innerHTML = '<i class="fas fa-check-circle me-1"></i> Saved Locally';
             });
-        }
-
-        function generateReports() {
-            const dateVal = document.getElementById('reportGenDateValue');
-            if(dateVal) dateVal.innerText = new Date().toLocaleDateString(currentLang === 'ar' ? 'ar-EG' : 'en-US');
-            
-            let totalContractingVal = 0;
-            let totalContractingExp = 0;
-
-            (dbData.projects || []).forEach(p => {
-                totalContractingVal += parseFloat(p.total || 0);
-                if(p.materials) {
-                    p.materials.forEach(m => totalContractingExp += parseFloat(m.cost || 0));
-                }
-            });
-
-            const netContracting = totalContractingVal - totalContractingExp;
-
-            const repCT = document.getElementById('repContractingTotal');
-            if(repCT) repCT.innerText = totalContractingVal + ' OMR';
-            const repCE = document.getElementById('repContractingExpenses');
-            if(repCE) repCE.innerText = totalContractingExp + ' OMR';
-            const repCN = document.getElementById('repContractingNet');
-            if(repCN) repCN.innerText = netContracting + ' OMR';
-
-            let totalDecorVal = 0;
-            let totalDecorPaid = 0;
-
-            (dbData.decorInvoices || []).forEach(d => {
-                totalDecorVal += parseFloat(d.total || 0);
-                totalDecorPaid += parseFloat(d.paid || 0);
-            });
-
-            const remainingDecor = totalDecorVal - totalDecorPaid;
-
-            const repDT = document.getElementById('repDecorTotalVal');
-            if(repDT) repDT.innerText = totalDecorVal + ' OMR';
-            const repDP = document.getElementById('repDecorPaidVal');
-            if(repDP) repDP.innerText = totalDecorPaid + ' OMR';
-            const repDR = document.getElementById('repDecorRemainingVal');
-            if(repDR) repDR.innerText = remainingDecor + ' OMR';
         }
 
         function addNewUser() {
