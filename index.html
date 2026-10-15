@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام إدارة المقاولات والديكور</title>
-    <!-- Bootstrap 5 CSS RTL -->
+    <title>نظام إدارة المقاولات والديكور المتكامل</title>
+    <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet" id="bootstrapCSS">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -23,8 +23,16 @@
         .bg-contracting { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); }
         .bg-decor { background: linear-gradient(135deg, #d4a373 0%, #a98467 100%); }
         .printable-invoice { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        #syncStatus { font-size: 0.85rem; }
         .company-logo { max-height: 50px; object-fit: contain; }
         .invoice-logo { max-height: 80px; object-fit: contain; }
+        .stat-card { border-right: 4px solid #0d6efd; border-radius: 8px; background: white; padding: 15px; }
+        @media print {
+            body * { visibility: hidden; }
+            #printableArea, #printableArea *, #reportsPrintArea, #reportsPrintArea * { visibility: visible; }
+            #printableArea, #reportsPrintArea { position: absolute; left: 0; top: 0; width: 100%; }
+            .no-print { display: none !important; }
+        }
     </style>
 </head>
 <body>
@@ -34,28 +42,28 @@
         <div class="container min-vh-100 d-flex align-items-center justify-content-center">
             <div class="card card-custom p-4 col-md-5 col-lg-4 text-center">
                 <div class="d-flex justify-content-end mb-2">
-                    <button class="btn btn-sm btn-outline-secondary" type="button" onclick="toggleLanguage()"><i class="fas fa-globe me-1"></i> <span id="langBtnText">English</span></button>
+                    <button class="btn btn-sm btn-outline-secondary" type="button" onclick="toggleLanguage()"><i class="fas fa-globe me-1"></i> <span class="lang-toggle-text">English</span></button>
                 </div>
-                <div class="mb-3">
+                <div id="loginLogoContainer" class="mb-3">
                     <i class="fas fa-building-columns fa-3x text-primary" id="defaultLoginIcon"></i>
+                    <img id="loginCompanyLogo" src="" class="invoice-logo d-none" alt="Logo">
                 </div>
-                <h3 class="fw-bold mb-1" id="uiTitle">منصة المقاولات والديكور</h3>
-                <p class="text-muted small mb-3" id="uiSub">تسجيل الدخول للنظام الإداري</p>
+                <h3 class="fw-bold mb-1" id="loginCompanyNameDisplay">منصة المقاولات والديكور</h3>
+                <p class="text-muted small mb-3" data-i18n="loginSub">تسجيل الدخول للنظام الإداري</p>
                 
                 <div class="mb-3 text-start">
-                    <label class="form-label" id="labelUser">اسم المستخدم</label>
+                    <label class="form-label" data-i18n="username">اسم المستخدم</label>
                     <input type="text" class="form-control" id="loginUsername" value="admin">
                 </div>
                 <div class="mb-3 text-start">
-                    <label class="form-label" id="labelPass">كلمة المرور</label>
+                    <label class="form-label" data-i18n="password">كلمة المرور</label>
                     <input type="password" class="form-control" id="loginPassword" value="123">
                 </div>
                 
-                <!-- زر تسجيل الدخول مباشر بدون Form لمنع أي تعليق -->
-                <button type="button" onclick="doLogin()" class="btn btn-primary w-100 py-2 fw-bold mb-2" id="btnLoginText">تسجيل الدخول</button>
+                <button type="button" onclick="doLogin()" class="btn btn-primary w-100 py-2 fw-bold mb-2" data-i18n="btnLogin">تسجيل الدخول</button>
                 
                 <div class="text-center mt-2">
-                    <a href="javascript:void(0);" onclick="openResetModal()" class="text-decoration-none small text-muted"><i class="fas fa-key me-1"></i><span id="uiForgot">نسيت كلمة مرور الآدمن؟</span></a>
+                    <a href="javascript:void(0);" onclick="openForgotAdminModal()" class="text-decoration-none small text-muted"><i class="fas fa-key me-1"></i><span data-i18n="forgotAdminPass">نسيت كلمة مرور الآدمن؟</span></a>
                 </div>
             </div>
         </div>
@@ -65,156 +73,233 @@
     <div id="mainPage" class="page">
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
             <div class="container">
-                <span class="navbar-brand"><i class="fas fa-hard-hat me-2"></i><span id="navBrand">منصة المقاولات والديكور</span></span>
+                <span class="navbar-brand d-flex align-items-center gap-2">
+                    <img id="headerLogo" src="" class="company-logo d-none" alt="Logo">
+                    <span id="headerCompanyName"><i class="fas fa-hard-hat me-2"></i>منصة المقاولات والديكور</span>
+                </span>
                 <div class="d-flex align-items-center gap-2">
+                    <span id="syncStatus" class="text-info me-2"><i class="fas fa-check-circle me-1"></i> متصل</span>
                     <button class="btn btn-outline-light btn-sm" type="button" onclick="toggleLanguage()"><i class="fas fa-globe me-1"></i> <span class="lang-toggle-text">English</span></button>
-                    <button class="btn btn-outline-danger btn-sm" onclick="doLogout()"><i class="fas fa-sign-out-alt me-1"></i> <span id="uiLogout">خروج</span></button>
+                    <button id="adminReportsBtn" class="btn btn-outline-info btn-sm d-none" onclick="showPage('reportsPage')"><i class="fas fa-chart-line me-1"></i> <span data-i18n="btnReports">التقارير</span></button>
+                    <button id="adminUsersBtn" class="btn btn-outline-warning btn-sm d-none" onclick="showPage('usersManagementPage')"><i class="fas fa-cog me-1"></i> <span data-i18n="btnSettings">الإعدادات والمستخدمين</span></button>
+                    <button class="btn btn-outline-danger btn-sm" onclick="doLogout()"><i class="fas fa-sign-out-alt me-1"></i> <span data-i18n="btnLogout">خروج</span></button>
                 </div>
             </div>
         </nav>
         <div class="container py-4">
-            <h3 class="text-center mb-4 fw-bold" id="uiChoose">اختر القسم للبدء</h3>
+            <h3 class="text-center mb-4 fw-bold" data-i18n="chooseSection">اختر القسم للبدء</h3>
             <div class="row g-4 justify-content-center">
-                <div class="col-md-5">
-                    <div class="section-btn bg-contracting shadow" onclick="alert('قسم مقاولات البناء قيد التشغيل')">
-                        <i class="fas fa-city fa-2x mb-3"></i> <span id="uiContracting">مقاولات البناء</span>
+                <div class="col-md-5" id="navContractingCard">
+                    <div class="section-btn bg-contracting shadow" onclick="showPage('contractingPage')">
+                        <i class="fas fa-city fa-2x mb-3"></i> <span data-i18n="secContracting">مقاولات البناء</span>
                     </div>
                 </div>
-                <div class="col-md-5">
-                    <div class="section-btn bg-decor shadow" onclick="alert('قسم أعمال الديكور قيد التشغيل')">
-                        <i class="fas fa-paint-roller fa-2x mb-3"></i> <span id="uiDecor">أعمال الديكور والتصميم</span>
+                <div class="col-md-5" id="navDecorCard">
+                    <div class="section-btn bg-decor shadow" onclick="showPage('decorPage')">
+                        <i class="fas fa-paint-roller fa-2x mb-3"></i> <span data-i18n="secDecor">أعمال الديكور</span>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- نافذة نسيت كلمة المرور -->
-    <div class="modal fade" id="resetModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header"><h5 class="modal-title">استعادة كلمة المرور</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-                <div class="modal-body">
-                    <div class="mb-3"><label class="form-label small">كود الأمان (ADMIN-RESET-2026)</label><input type="password" id="resetCode" class="form-control"></div>
-                    <div class="mb-3"><label class="form-label small">كلمة المرور الجديدة</label><input type="password" id="newPass" class="form-control"></div>
-                    <button type="button" class="btn btn-danger w-100" onclick="confirmReset()">تحديث كلمة المرور</button>
+    <!-- 3. التقارير المالية (خاص بالآدمن) -->
+    <div id="reportsPage" class="page">
+        <nav class="navbar navbar-dark bg-dark mb-4">
+            <div class="container">
+                <span class="navbar-brand"><i class="fas fa-chart-pie me-2"></i><span data-i18n="reportsTitle">التقارير المالية والإحصائيات</span></span>
+                <button class="btn btn-light btn-sm" onclick="showPage('mainPage')"><i class="fas fa-arrow-right me-1"></i> <span data-i18n="btnMain">الرئيسية</span></button>
+            </div>
+        </nav>
+        <div class="container">
+            <div id="reportsPrintArea" class="bg-white p-4 rounded shadow-sm">
+                <div class="text-center mb-4 border-bottom pb-3">
+                    <img id="reportLogoImg" src="" class="invoice-logo d-none mb-2" alt="Logo">
+                    <h3 class="fw-bold" id="reportCompanyTitle">اسم الشركة</h3>
+                    <h5 class="text-muted" data-i18n="summaryReportTitle">تقرير الأداء المالي الشامل</h5>
+                    <p class="small text-secondary mb-0"><span data-i18n="reportGenDate">تاريخ الاستخراج:</span> <span id="reportGenDateValue"></span></p>
+                </div>
+
+                <h5 class="fw-bold text-primary mb-3"><i class="fas fa-building me-2"></i><span data-i18n="contractingSummary">ملخص قسم المقاولات</span></h5>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4"><div class="stat-card"><span class="text-muted small" data-i18n="repTotalProjectsVal">إجمالي قيمة المشاريع</span><h4 class="fw-bold text-primary mt-1" id="repContractingTotal">0 OMR</h4></div></div>
+                    <div class="col-md-4"><div class="stat-card" style="border-color: #dc3545;"><span class="text-muted small" data-i18n="repTotalExpenses">إجمالي مصروفات المواد</span><h4 class="fw-bold text-danger mt-1" id="repContractingExpenses">0 OMR</h4></div></div>
+                    <div class="col-md-4"><div class="stat-card" style="border-color: #198754;"><span class="text-muted small" data-i18n="repExpectedProfit">صافي المتبقي / الأرباح</span><h4 class="fw-bold text-success mt-1" id="repContractingNet">0 OMR</h4></div></div>
+                </div>
+
+                <h5 class="fw-bold text-warning mb-3"><i class="fas fa-paint-roller me-2"></i><span data-i18n="decorSummary">ملخص قسم الديكور</span></h5>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4"><div class="stat-card" style="border-color: #ffc107;"><span class="text-muted small" data-i18n="repDecorTotal">إجمالي عقود الديكور</span><h4 class="fw-bold text-dark mt-1" id="repDecorTotalVal">0 OMR</h4></div></div>
+                    <div class="col-md-4"><div class="stat-card" style="border-color: #198754;"><span class="text-muted small" data-i18n="repDecorPaid">إجمالي المبالغ المحصلة</span><h4 class="fw-bold text-success mt-1" id="repDecorPaidVal">0 OMR</h4></div></div>
+                    <div class="col-md-4"><div class="stat-card" style="border-color: #dc3545;"><span class="text-muted small" data-i18n="repDecorRemaining">المبالغ المتبقية للتحصيل</span><h4 class="fw-bold text-danger mt-1" id="repDecorRemainingVal">0 OMR</h4></div></div>
+                </div>
+            </div>
+            <div class="mt-3 text-end no-print">
+                <button class="btn btn-secondary" onclick="window.print()"><i class="fas fa-print me-1"></i> <span data-i18n="btnPrintReport">طباعة التقرير</span></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. لوحة إدارة المستخدمين والهوية -->
+    <div id="usersManagementPage" class="page">
+        <nav class="navbar navbar-dark bg-dark mb-4">
+            <div class="container">
+                <span class="navbar-brand"><i class="fas fa-user-shield me-2"></i><span data-i18n="settingsTitle">إدارة النظام والمستخدمين</span></span>
+                <button class="btn btn-light btn-sm" onclick="showPage('mainPage')"><i class="fas fa-arrow-right me-1"></i> <span data-i18n="btnMain">الرئيسية</span></button>
+            </div>
+        </nav>
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card card-custom p-3 mb-3">
+                        <h5 class="fw-bold mb-3"><i class="fas fa-building me-2"></i><span data-i18n="companyIdentity">هوية الشركة</span></h5>
+                        <div class="mb-3">
+                            <label class="form-label small" data-i18n="companyName">اسم الشركة / المؤسسة</label>
+                            <input type="text" id="companyNameInput" class="form-control form-control-sm">
+                            <button class="btn btn-sm btn-primary w-100 mt-2" onclick="saveCompanyName()"><i class="fas fa-save me-1"></i> <span data-i18n="btnSaveName">حفظ الاسم</span></button>
+                        </div>
+                        <hr>
+                        <h6 class="fw-bold mb-2"><i class="fas fa-image me-2"></i><span data-i18n="companyLogo">شعار الشركة</span></h6>
+                        <div class="text-center mb-3">
+                            <img id="logoPreview" src="" class="img-thumbnail d-none" style="max-height: 100px;">
+                            <p id="noLogoText" class="text-muted small" data-i18n="noLogo">لا يوجد شعار مخصص</p>
+                        </div>
+                        <input type="file" id="logoInput" class="form-control form-control-sm mb-2" accept="image/*" onchange="previewAndSaveLogo(event)">
+                        <button class="btn btn-sm btn-outline-danger w-100" onclick="removeLogo()" data-i18n="btnDeleteLogo">حذف الشعار</button>
+                    </div>
+                </div>
+
+                <div class="col-md-8">
+                    <div class="card card-custom p-3 mb-4">
+                        <h5 class="fw-bold mb-3"><i class="fas fa-user-plus me-2"></i><span data-i18n="addUserTitle">إضافة مستخدم جديد وصلاحياته</span></h5>
+                        <div class="row g-2">
+                            <div class="col-md-6 mb-2"><input type="text" class="form-control" id="newUsername" placeholder="اسم المستخدم"></div>
+                            <div class="col-md-6 mb-2"><input type="password" class="form-control" id="newPassword" placeholder="كلمة المرور"></div>
+                        </div>
+                        <div class="my-2">
+                            <label class="fw-bold small mb-2" data-i18n="permsTitle">الصلاحيات:</label>
+                            <div class="d-flex flex-wrap gap-3">
+                                <div class="form-check"><input class="form-check-input" type="checkbox" id="permContracting" checked><label class="form-check-label small" for="permContracting" data-i18n="permContracting">قسم المقاولات</label></div>
+                                <div class="form-check"><input class="form-check-input" type="checkbox" id="permDecor" checked><label class="form-check-label small" for="permDecor" data-i18n="permDecor">قسم الديكور</label></div>
+                                <div class="form-check"><input class="form-check-input" type="checkbox" id="permEdit" checked><label class="form-check-label small" for="permEdit" data-i18n="permEdit">التعديل</label></div>
+                                <div class="form-check"><input class="form-check-input" type="checkbox" id="permDelete" checked><label class="form-check-label small" for="permDelete" data-i18n="permDelete">الحذف</label></div>
+                            </div>
+                        </div>
+                        <button class="btn btn-success mt-2" onclick="addNewUser()"><i class="fas fa-save me-1"></i> <span data-i18n="btnSaveUser">حفظ المستخدم</span></button>
+                    </div>
+
+                    <div class="card card-custom p-3">
+                        <h5 class="fw-bold mb-3"><i class="fas fa-users me-2"></i><span data-i18n="usersListTitle">قائمة المستخدمين</span></h5>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead><tr><th data-i18n="thUser">المستخدم</th><th data-i18n="thRole">الدور</th><th data-i18n="thPerms">الصلاحيات</th><th data-i18n="thAction">إجراء</th></tr></thead>
+                                <tbody id="usersTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        let currentLang = localStorage.getItem('app_lang') || 'ar';
+    <!-- 5. قسم مقاولات البناء -->
+    <div id="contractingPage" class="page">
+        <nav class="navbar navbar-dark bg-primary mb-4">
+            <div class="container">
+                <span class="navbar-brand"><i class="fas fa-city me-2"></i><span data-i18n="secContracting">قسم مقاولات البناء</span></span>
+                <button class="btn btn-light btn-sm" onclick="showPage('mainPage')"><i class="fas fa-arrow-right me-1"></i> <span data-i18n="btnMain">الرئيسية</span></button>
+            </div>
+        </nav>
+        <div class="container">
+            <div class="row align-items-center mb-4 g-2">
+                <div class="col-md-5"><h4 class="mb-0" data-i18n="cloudProjectsList">قائمة المشاريع السحابية</h4></div>
+                <div class="col-md-4">
+                    <input type="text" id="searchProjectInput" class="form-control form-control-sm" placeholder="بحث..." onkeyup="filterProjects()">
+                </div>
+                <div class="col-md-3 text-end d-flex gap-1 justify-content-end">
+                    <button class="btn btn-outline-primary btn-sm" onclick="loadDataFromDrive()"><i class="fas fa-sync me-1"></i> <span data-i18n="btnRefresh">تحديث</span></button>
+                    <button id="addProjectBtn" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#newProjectModal" onclick="openAddProjectModal()"><i class="fas fa-plus me-1"></i> <span data-i18n="btnNewProject">مشروع جديد</span></button>
+                </div>
+            </div>
+            <div class="row" id="projectsList"></div>
+        </div>
+    </div>
 
-        // التحقق الفوري عند تحميل الصفحة
-        window.onload = function() {
-            applyLang();
-            if(localStorage.getItem('is_logged') === 'true') {
-                showPage('mainPage');
-            } else {
-                showPage('loginPage');
-            }
-        };
+    <!-- 6. تفاصيل المشروع -->
+    <div id="projectDetailsPage" class="page">
+        <nav class="navbar navbar-dark bg-secondary mb-4">
+            <div class="container">
+                <span class="navbar-brand" id="currentProjectTitle">تفاصيل المشروع</span>
+                <button class="btn btn-light btn-sm" onclick="showPage('contractingPage')"><i class="fas fa-arrow-right me-1"></i> <span data-i18n="btnBackProjects">رجوع للمشاريع</span></button>
+            </div>
+        </nav>
+        <div class="container">
+            <div class="row mb-4">
+                <div class="col-md-4"><div class="card p-3 bg-primary text-white text-center"><h5 data-i18n="projTotalCost">إجمالي القيمة</h5><h3 id="projTotalCost">0</h3></div></div>
+                <div class="col-md-4"><div class="card p-3 bg-warning text-dark text-center"><h5 data-i18n="projExpenses">إجمالي المصروفات</h5><h3 id="projTotalExpenses">0</h3></div></div>
+                <div class="col-md-4"><div class="card p-3 bg-success text-white text-center"><h5 data-i18n="projRemaining">المبلغ المتبقي</h5><h3 id="projRemainingCost">0</h3></div></div>
+            </div>
 
-        function showPage(pageId) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            const target = document.getElementById(pageId);
-            if(target) target.classList.add('active');
-        }
+            <div class="row align-items-center mb-3 g-2">
+                <div class="col-md-6"><h5 data-i18n="buildingMaterials">مواد ومشتريات البناء</h5></div>
+                <div class="col-md-4"><input type="text" id="searchMaterialInput" class="form-control form-control-sm" placeholder="بحث باسم المادة..." onkeyup="filterMaterials()"></div>
+                <div class="col-md-2 text-end"><button id="addMaterialBtn" class="btn btn-primary btn-sm w-100" data-bs-toggle="modal" data-bs-target="#addMaterialModal"><i class="fas fa-cart-plus me-1"></i> <span data-i18n="btnAddMaterial">إضافة مادة</span></button></div>
+            </div>
 
-        function toggleLanguage() {
-            currentLang = currentLang === 'ar' ? 'en' : 'ar';
-            localStorage.setItem('app_lang', currentLang);
-            applyLang();
-        }
+            <div class="table-responsive bg-white p-3 rounded shadow-sm">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr><th>#</th><th data-i18n="thMatName">اسم المادة</th><th data-i18n="thCost">القيمة</th><th data-i18n="thDate">تاريخ الشراء</th><th class="action-col" data-i18n="thAction">إجراء</th></tr>
+                    </thead>
+                    <tbody id="materialsTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
-        function applyLang() {
-            const isAr = currentLang === 'ar';
-            document.documentElement.lang = currentLang;
-            document.documentElement.dir = isAr ? 'rtl' : 'ltr';
-            
-            // تغيير ملف Bootstrap حسب اللغة
-            const bs = document.getElementById('bootstrapCSS');
-            if(isAr) {
-                bs.href = "https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css";
-            } else {
-                bs.href = "https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css";
-            }
+    <!-- 7. قسم الديكور -->
+    <div id="decorPage" class="page">
+        <nav class="navbar navbar-dark bg-warning text-dark mb-4">
+            <div class="container">
+                <span class="navbar-brand text-dark"><i class="fas fa-paint-roller me-2"></i><span data-i18n="secDecor">قسم أعمال الديكور</span></span>
+                <button class="btn btn-dark btn-sm" onclick="showPage('mainPage')"><i class="fas fa-arrow-right me-1"></i> <span data-i18n="btnMain">الرئيسية</span></button>
+            </div>
+        </nav>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-5 mb-4 no-print">
+                    <div class="card card-custom p-4">
+                        <h5 class="fw-bold mb-3" data-i18n="decorInputTitle">إدخال تفاصيل معاملة ديكور</h5>
+                        <div>
+                            <div class="mb-2"><label class="form-label" data-i18n="clientName">اسم العميل</label><input type="text" class="form-control" id="decClientName"></div>
+                            <div class="mb-2"><label class="form-label" data-i18n="clientPhone">رقم الواتساب</label><input type="text" class="form-control" id="decClientPhone" placeholder="96899000000"></div>
+                            <div class="mb-2"><label class="form-label" data-i18n="workType">نوع الخدمة</label><input type="text" class="form-control" id="decWorkType" placeholder="تكسية جدران..."></div>
+                            <div class="mb-2"><label class="form-label" data-i18n="totalCost">التكلفة الإجمالية</label><input type="number" class="form-control" id="decTotal"></div>
+                            <div class="mb-2"><label class="form-label" data-i18n="paidAmount">المبلغ المدفوع</label><input type="number" class="form-control" id="decPaid"></div>
+                            <div class="mb-3"><label class="form-label" data-i18n="notes">ملاحظات</label><textarea class="form-control" id="decNotes" rows="2"></textarea></div>
+                            <button type="button" class="btn btn-warning w-100 fw-bold" onclick="generateDecorInvoice()" data-i18n="btnUpdateInvoice">تحديث المعاينة وتدقيق الحفظ</button>
+                        </div>
+                    </div>
+                </div>
 
-            document.querySelectorAll('.lang-toggle-text').forEach(el => el.innerText = isAr ? 'English' : 'العربية');
-            document.getElementById('langBtnText').innerText = isAr ? 'English' : 'العربية';
-
-            if(isAr) {
-                document.getElementById('uiTitle').innerText = "منصة المقاولات والديكور";
-                document.getElementById('uiSub').innerText = "تسجيل الدخول للنظام الإداري";
-                document.getElementById('labelUser').innerText = "اسم المستخدم";
-                document.getElementById('labelPass').innerText = "كلمة المرور";
-                document.getElementById('btnLoginText').innerText = "تسجيل الدخول";
-                document.getElementById('uiForgot').innerText = "نسيت كلمة مرور الآدمن؟";
-                document.getElementById('navBrand').innerText = "منصة المقاولات والديكور";
-                document.getElementById('uiLogout').innerText = "خروج";
-                document.getElementById('uiChoose').innerText = "اختر القسم للبدء";
-                document.getElementById('uiContracting').innerText = "مقاولات البناء";
-                document.getElementById('uiDecor').innerText = "أعمال الديكور والتصميم";
-            } else {
-                document.getElementById('uiTitle').innerText = "Contracting & Decor Platform";
-                document.getElementById('uiSub').innerText = "Administrative Login";
-                document.getElementById('labelUser').innerText = "Username";
-                document.getElementById('labelPass').innerText = "Password";
-                document.getElementById('btnLoginText').innerText = "Login";
-                document.getElementById('uiForgot').innerText = "Forgot Admin Password?";
-                document.getElementById('navBrand').innerText = "Contracting & Decor Platform";
-                document.getElementById('uiLogout').innerText = "Logout";
-                document.getElementById('uiChoose').innerText = "Choose Section to Start";
-                document.getElementById('uiContracting').innerText = "Building Contracting";
-                document.getElementById('uiDecor').innerText = "Interior Decor";
-            }
-        }
-
-        function doLogin() {
-            const u = document.getElementById('loginUsername').value.trim();
-            const p = document.getElementById('loginPassword').value.trim();
-            
-            // جلب كلمة المرور المخزنة أو الافتراضية
-            const savedPass = localStorage.getItem('admin_pass') || '123';
-
-            if(u === 'admin' && p === savedPass) {
-                localStorage.setItem('is_logged', 'true');
-                showPage('mainPage');
-            } else {
-                alert(currentLang === 'ar' ? 'اسم المستخدم أو كلمة المرور غير صحيحة!' : 'Invalid username or password!');
-            }
-        }
-
-        function doLogout() {
-            localStorage.removeItem('is_logged');
-            showPage('loginPage');
-        }
-
-        function openResetModal() {
-            const modal = new bootstrap.Modal(document.getElementById('resetModal'));
-            modal.show();
-        }
-
-        function confirmReset() {
-            const code = document.getElementById('resetCode').value.trim();
-            const newP = document.getElementById('newPass').value.trim();
-
-            if(code !== "ADMIN-RESET-2026") {
-                alert(currentLang === 'ar' ? 'كود الأمان خطأ!' : 'Invalid Security Code!');
-                return;
-            }
-            if(!newP) {
-                alert(currentLang === 'ar' ? 'أدخل كلمة المرور الجديدة' : 'Enter new password');
-                return;
-            }
-
-            localStorage.setItem('admin_pass', newP);
-            alert(currentLang === 'ar' ? 'تم تحديث كلمة المرور بنجاح! كلمة المرور الجديدة هي: ' + newP : 'Password updated successfully!');
-            bootstrap.Modal.getInstance(document.getElementById('resetModal')).hide();
-        }
-    </script>
-</body>
-</html>
+                <div class="col-md-7">
+                    <div id="printableArea" class="printable-invoice">
+                        <div class="text-center mb-4 border-bottom pb-3">
+                            <img id="invoiceLogoImg" src="" class="invoice-logo d-none mb-2" alt="Logo">
+                            <h3 class="fw-bold" id="invoiceCompanyName">اسم الشركة</h3>
+                            <p class="text-muted mb-0" data-i18n="decorInvoiceTitle">فاتورة / عقد عمل ديكور</p>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-6"><strong><span data-i18n="thDate">التاريخ</span>:</strong> <span id="viewDate">-</span></div>
+                            <div class="col-6 text-end"><strong><span data-i18n="clientName">العميل</span>:</strong> <span id="viewClientName">-</span></div>
+                        </div>
+                        <table class="table table-bordered my-3">
+                            <thead class="table-light"><tr><th data-i18n="thDesc">الوصف</th><th data-i18n="thCost">المبلغ</th></tr></thead>
+                            <tbody>
+                                <tr><td id="viewWorkType">تفاصيل الخدمة...</td><td id="viewTotal">0 OMR</td></tr>
+                                <tr><td data-i18n="paidAmount">المدفوع</td><td id="viewPaid" class="text-success">0 OMR</td></tr>
+                                <tr><td><strong data-i18n="projRemaining">المتبقي</strong></td><td id="viewRemaining" class="text-danger fw-bold">0 OMR</td></tr>
+                            </tbody>
+                        </table>
+                        <p><strong><span data-i18n="notes">ملاحظات</span>:</strong> <span id="viewNotes">-</span></p>
+                        <div class
