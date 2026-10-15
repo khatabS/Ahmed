@@ -14,7 +14,7 @@
         body { font-family: 'Cairo', sans-serif; background-color: #f4f6f9; color: #333; }
         .page { display: none !important; }
         .page.active { display: block !important; }
-        .card-custom { border: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .card-custom { border: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); position: relative; }
         .section-btn {
             height: 170px; font-size: 1.4rem; font-weight: bold;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -309,7 +309,7 @@
                         <h5 class="fw-bold mb-3"><i class="fas fa-file-invoice me-2"></i>تفاصيل فاتورة الديكور</h5>
                         
                         <div class="mb-2"><label class="form-label small fw-bold">اسم العميل</label><input type="text" class="form-control form-control-sm" id="decClientName"></div>
-                        <div class="mb-2"><label class="form-label small fw-bold">الرقم المدني</label><input type="text" class="form-control form-control-sm" id="decCivilId" placeholder="أدخل الرقم المدني"></div>
+                        <div class="mb-2"><label class="form-label small fw-bold text-danger">الرقم المدني (إلزامي) *</label><input type="text" class="form-control form-control-sm border-danger" id="decCivilId" placeholder="أدخل الرقم المدني إجبارياً"></div>
                         <div class="mb-2"><label class="form-label small fw-bold">رقم الهاتف / الواتساب</label><input type="text" class="form-control form-control-sm" id="decClientPhone" placeholder="96899000000"></div>
                         <div class="mb-3"><label class="form-label small fw-bold">المبلغ المدفوع مقدمًا</label><input type="number" class="form-control form-control-sm" id="decPaid" value="0"></div>
                         
@@ -420,11 +420,11 @@
                 <div class="modal-header"><h5 class="modal-title" id="projectModalTitle">مشروع مقاولات جديد</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
                 <div class="modal-body">
                     <input type="hidden" id="editingProjectId">
-                    <div class="mb-3"><label class="form-label">اسم المشروع / العميل</label><input type="text" class="form-control" id="pName"></div>
-                    <div class="mb-3"><label class="form-label">الرقم المدني</label><input type="text" class="form-control" id="pCivilId" placeholder="أدخل الرقم المدني"></div>
-                    <div class="mb-3"><label class="form-label">رقم الهاتف</label><input type="text" class="form-control" id="pPhone" placeholder="أدخل رقم الهاتف"></div>
-                    <div class="mb-3"><label class="form-label">القيمة الإجمالية للمشروع</label><input type="number" class="form-control" id="pTotal"></div>
-                    <button type="button" class="btn btn-primary w-100" id="saveProjectBtn"><i class="fas fa-save me-1"></i> حفظ المشروع سحابياً</button>
+                    <div class="mb-3"><label class="form-label fw-bold">اسم المشروع / العميل</label><input type="text" class="form-control" id="pName" required></div>
+                    <div class="mb-3"><label class="form-label fw-bold text-danger">الرقم المدني (إلزامي) *</label><input type="text" class="form-control border-danger" id="pCivilId" placeholder="أدخل الرقم المدني إجبارياً" required></div>
+                    <div class="mb-3"><label class="form-label fw-bold">رقم الهاتف</label><input type="text" class="form-control" id="pPhone" placeholder="أدخل رقم الهاتف"></div>
+                    <div class="mb-3"><label class="form-label fw-bold">القيمة الإجمالية للمشروع</label><input type="number" class="form-control" id="pTotal" required></div>
+                    <button type="button" class="btn btn-primary w-100 fw-bold" id="saveProjectBtn"><i class="fas fa-save me-1"></i> حفظ المشروع سحابياً</button>
                 </div>
             </div>
         </div>
@@ -700,10 +700,15 @@
 
         function generateDecorInvoice() {
             const clientName = document.getElementById('decClientName').value || '-';
-            const civilId = document.getElementById('decCivilId').value || '-';
+            const civilId = document.getElementById('decCivilId').value.trim();
             const phone = document.getElementById('decClientPhone').value || '-';
             const paid = parseFloat(document.getElementById('decPaid').value) || 0;
             const notes = document.getElementById('decNotes').value || '-';
+
+            if(!civilId) {
+                alert('عذراً، الرقم المدني إلزامي ولا يمكن حفظ فاتورة الديكور بدونه!');
+                return;
+            }
 
             document.getElementById('viewClientName').innerText = clientName;
             document.getElementById('viewCivilId').innerText = civilId;
@@ -978,17 +983,14 @@
                 list.innerHTML += `
                     <div class="col-md-4 mb-3">
                         <div class="card card-custom p-3 shadow-sm">
-                            <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
                                 <h5 class="fw-bold text-primary mb-0">${p.name}</h5>
-                                <div class="dropdown">
-                                    <button class="btn btn-sm btn-light" type="button" data-bs-toggle="dropdown"><i class="fas fa-ellipsis-v"></i></button>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="javascript:void(0);" onclick="editProject(${p.id})"><i class="fas fa-edit text-warning me-2"></i>تعديل</a></li>
-                                        <li><a class="dropdown-item" href="javascript:void(0);" onclick="deleteProject(${p.id})"><i class="fas fa-trash text-danger me-2"></i>حذف</a></li>
-                                    </ul>
+                                <div class="d-flex gap-1">
+                                    <button type="button" class="btn btn-sm btn-outline-warning py-0 px-2" onclick="editProject(${p.id})" title="تعديل"><i class="fas fa-edit"></i></button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2" onclick="deleteProject(${p.id})" title="حذف"><i class="fas fa-trash"></i></button>
                                 </div>
                             </div>
-                            <p class="small text-muted mb-0">الرقم المدني: ${p.civilId || '-'} | الهاتف: ${p.phone || '-'}</p>
+                            <p class="small text-muted mb-0">الرقم المدني: <strong class="text-dark">${p.civilId || '-'}</strong> | الهاتف: ${p.phone || '-'}</p>
                             <hr class="my-2">
                             <p class="text-muted mb-1">الإجمالي: ${p.total} OMR</p>
                             <p class="text-danger mb-1">المصروفات: ${totalExp} OMR</p>
@@ -1030,7 +1032,11 @@
             const phone = document.getElementById('pPhone').value.trim();
             const total = parseFloat(document.getElementById('pTotal').value);
             
-            if(!name || isNaN(total)) { alert('يرجى إدخال اسم المشروع والقيمة الإجمالية على الأقل'); return; }
+            // التحقق الجبري الإلزامي من الرقم المدني
+            if(!name || !civilId || isNaN(total)) { 
+                alert('⚠️ عذراً، الرقم المدني إلزامي! يرجى إدخال اسم المشروع، الرقم المدني، والقيمة الإجمالية قبل الحفظ.'); 
+                return; 
+            }
 
             if(editingId) {
                 const p = dbData.projects.find(item => item.id == editingId);
