@@ -449,7 +449,9 @@
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw4ylt5kzWd6M-DK6xOUcXCUQTDfz2np26Fpr1e4DmlrbT0IBOTkYNjbpTYfMCI07fZ/exec";
         
-        let currentLang = localStorage.getItem('app_lang') || 'ar';
+        // رقم الإصدار التلقائي لمنع التعارض مع الكاش القديم
+        const CURRENT_APP_VERSION = "2.6"; 
+        
         let dbData = {
             companyName: "منارة وادي العين",
             projects: [],
@@ -465,8 +467,10 @@
         let currentDecorItems = [];
 
         document.addEventListener("DOMContentLoaded", function() {
+            checkAndCleanCache();
             initLocalData();
             checkSession();
+            loadDataFromDrive(); // جلب البيانات السحابية فوراً في الخلفية دون مسح المحلي
 
             document.getElementById('loginSubmitBtn').addEventListener('click', doLogin);
             document.getElementById('logoutBtn').addEventListener('click', doLogout);
@@ -501,6 +505,33 @@
             document.getElementById('decPaid').addEventListener('input', generateDecorInvoice);
             document.getElementById('sendWhatsAppBtn').addEventListener('click', sendWhatsApp);
         });
+
+        // دالة الفحص التلقائي للإصدار لمنع تعارض الذاكرة المؤقتة (Cache)
+        function checkAndCleanCache() {
+            const savedVersion = localStorage.getItem('app_system_version');
+            if (savedVersion !== CURRENT_APP_VERSION) {
+                // حفظ المشاريع والبيانات القديمة مؤقتاً قبل التحديث لتجنب أي ضياع
+                let oldProjects = [];
+                let oldInvoices = [];
+                try {
+                    const existing = JSON.parse(localStorage.getItem('app_system_db'));
+                    if(existing) {
+                        oldProjects = existing.projects || [];
+                        oldInvoices = existing.decorInvoices || [];
+                    }
+                } catch(e) {}
+
+                // تحديث رقم الإصدار وإعادة تهيئة الذاكرة بأمان
+                localStorage.setItem('app_system_version', CURRENT_APP_VERSION);
+                
+                // التأكد من دمج البيانات القديمة إن وجدت
+                if(oldProjects.length > 0 || oldInvoices.length > 0) {
+                    dbData.projects = oldProjects;
+                    dbData.decorInvoices = oldInvoices;
+                    localStorage.setItem('app_system_db', JSON.stringify(dbData));
+                }
+            }
+        }
 
         function initLocalData() {
             try {
@@ -878,9 +909,13 @@
                 .then(res => res.json())
                 .then(data => {
                     if(data && typeof data === 'object') {
-                        // دمج آمن يحافظ على البيانات المحلية ولا يمسحها إذا كانت السحابة فارغة
+                        // دمج ذكي وآمن يحافظ على المشاريع المحلية ولا يمسحها أبداً
                         if(data.projects && data.projects.length > 0) {
-                            dbData.projects = data.projects;
+                            // دمج المشاريع القديمة مع السحابية لمنع أي فقدان
+                            const existingIds = new Set(dbData.projects.map(p => p.id));
+                            data.projects.forEach(p => {
+                                if(!existingIds.has(p.id)) dbData.projects.push(p);
+                            });
                         }
                         if(data.decorInvoices && data.decorInvoices.length > 0) {
                             dbData.decorInvoices = data.decorInvoices;
@@ -1036,7 +1071,6 @@
             const phone = document.getElementById('pPhone').value.trim();
             const total = parseFloat(document.getElementById('pTotal').value);
             
-            // التحقق الإلزامي الجبري من الرقم المدني
             if(!name || !civilId || isNaN(total)) { 
                 alert('⚠️ عذراً، الرقم المدني إلزامي! يرجى إدخال اسم المشروع، الرقم المدني، والقيمة الإجمالية قبل الحفظ.'); 
                 return; 
