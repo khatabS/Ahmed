@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>نظام إدارة المقاولات والديكور</title>
-    <!-- Bootstrap 5 CSS -->
+    <!-- Bootstrap 5 CSS RTL -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet" id="bootstrapCSS">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -23,16 +23,8 @@
         .bg-contracting { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); }
         .bg-decor { background: linear-gradient(135deg, #d4a373 0%, #a98467 100%); }
         .printable-invoice { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        #syncStatus { font-size: 0.85rem; }
         .company-logo { max-height: 50px; object-fit: contain; }
         .invoice-logo { max-height: 80px; object-fit: contain; }
-        .stat-card { border-right: 4px solid #0d6efd; border-radius: 8px; background: white; padding: 15px; }
-        @media print {
-            body * { visibility: hidden; }
-            #printableArea, #printableArea *, #reportsPrintArea, #reportsPrintArea * { visibility: visible; }
-            #printableArea, #reportsPrintArea { position: absolute; left: 0; top: 0; width: 100%; }
-            .no-print { display: none !important; }
-        }
     </style>
 </head>
 <body>
@@ -42,30 +34,28 @@
         <div class="container min-vh-100 d-flex align-items-center justify-content-center">
             <div class="card card-custom p-4 col-md-5 col-lg-4 text-center">
                 <div class="d-flex justify-content-end mb-2">
-                    <button class="btn btn-sm btn-outline-secondary" type="button" onclick="toggleLanguage()"><i class="fas fa-globe me-1"></i> <span class="lang-toggle-text">English</span></button>
+                    <button class="btn btn-sm btn-outline-secondary" type="button" onclick="toggleLanguage()"><i class="fas fa-globe me-1"></i> <span id="langBtnText">English</span></button>
                 </div>
-                <div id="loginLogoContainer" class="mb-3">
+                <div class="mb-3">
                     <i class="fas fa-building-columns fa-3x text-primary" id="defaultLoginIcon"></i>
-                    <img id="loginCompanyLogo" src="" class="invoice-logo d-none" alt="شعار الشركة">
                 </div>
-                <h3 class="fw-bold mb-1" id="loginCompanyNameDisplay">منصة المقاولات والديكور</h3>
-                <p class="text-muted small mb-3" data-i18n="loginSub">تسجيل الدخول للنظام الإداري</p>
+                <h3 class="fw-bold mb-1" id="uiTitle">منصة المقاولات والديكور</h3>
+                <p class="text-muted small mb-3" id="uiSub">تسجيل الدخول للنظام الإداري</p>
                 
-                <!-- استخدام نموذج (Form) لضمان استجابة زر الدخول بشكل طبيعي -->
-                <form id="loginForm" onsubmit="handleLogin(event)">
-                    <div class="mb-3 text-start">
-                        <label class="form-label" data-i18n="username">اسم المستخدم</label>
-                        <input type="text" class="form-control" id="loginUsername" value="admin" required>
-                    </div>
-                    <div class="mb-3 text-start">
-                        <label class="form-label" data-i18n="password">كلمة المرور</label>
-                        <input type="password" class="form-control" id="loginPassword" value="123" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100 py-2 fw-bold mb-2" data-i18n="btnLogin">تسجيل الدخول</button>
-                </form>
-
+                <div class="mb-3 text-start">
+                    <label class="form-label" id="labelUser">اسم المستخدم</label>
+                    <input type="text" class="form-control" id="loginUsername" value="admin">
+                </div>
+                <div class="mb-3 text-start">
+                    <label class="form-label" id="labelPass">كلمة المرور</label>
+                    <input type="password" class="form-control" id="loginPassword" value="123">
+                </div>
+                
+                <!-- زر تسجيل الدخول مباشر بدون Form لمنع أي تعليق -->
+                <button type="button" onclick="doLogin()" class="btn btn-primary w-100 py-2 fw-bold mb-2" id="btnLoginText">تسجيل الدخول</button>
+                
                 <div class="text-center mt-2">
-                    <a href="javascript:void(0);" onclick="openForgotAdminModal()" class="text-decoration-none small text-muted"><i class="fas fa-key me-1"></i><span data-i18n="forgotAdminPass">نسيت كلمة مرور الآدمن؟</span></a>
+                    <a href="javascript:void(0);" onclick="openResetModal()" class="text-decoration-none small text-muted"><i class="fas fa-key me-1"></i><span id="uiForgot">نسيت كلمة مرور الآدمن؟</span></a>
                 </div>
             </div>
         </div>
@@ -75,18 +65,156 @@
     <div id="mainPage" class="page">
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
             <div class="container">
-                <span class="navbar-brand d-flex align-items-center gap-2">
-                    <img id="headerLogo" src="" class="company-logo d-none" alt="Logo">
-                    <span id="headerCompanyName"><i class="fas fa-hard-hat me-2"></i>منصة المقاولات والديكور</span>
-                </span>
+                <span class="navbar-brand"><i class="fas fa-hard-hat me-2"></i><span id="navBrand">منصة المقاولات والديكور</span></span>
                 <div class="d-flex align-items-center gap-2">
-                    <span id="syncStatus" class="text-info me-2"><i class="fas fa-check-circle me-1"></i> متصل</span>
                     <button class="btn btn-outline-light btn-sm" type="button" onclick="toggleLanguage()"><i class="fas fa-globe me-1"></i> <span class="lang-toggle-text">English</span></button>
-                    <button id="adminReportsBtn" class="btn btn-outline-info btn-sm d-none" onclick="showPage('reportsPage')"><i class="fas fa-chart-line me-1"></i> <span data-i18n="btnReports">التقارير</span></button>
-                    <button id="adminUsersBtn" class="btn btn-outline-warning btn-sm d-none" onclick="showPage('usersManagementPage')"><i class="fas fa-cog me-1"></i> <span data-i18n="btnSettings">الإعدادات والمستخدمين</span></button>
-                    <button class="btn btn-outline-danger btn-sm" onclick="logout()"><i class="fas fa-sign-out-alt me-1"></i> <span data-i18n="btnLogout">خروج</span></button>
+                    <button class="btn btn-outline-danger btn-sm" onclick="doLogout()"><i class="fas fa-sign-out-alt me-1"></i> <span id="uiLogout">خروج</span></button>
                 </div>
             </div>
         </nav>
         <div class="container py-4">
-            <h3 class="text-center mb-4 fw-bold" data-i18n="chooseSection
+            <h3 class="text-center mb-4 fw-bold" id="uiChoose">اختر القسم للبدء</h3>
+            <div class="row g-4 justify-content-center">
+                <div class="col-md-5">
+                    <div class="section-btn bg-contracting shadow" onclick="alert('قسم مقاولات البناء قيد التشغيل')">
+                        <i class="fas fa-city fa-2x mb-3"></i> <span id="uiContracting">مقاولات البناء</span>
+                    </div>
+                </div>
+                <div class="col-md-5">
+                    <div class="section-btn bg-decor shadow" onclick="alert('قسم أعمال الديكور قيد التشغيل')">
+                        <i class="fas fa-paint-roller fa-2x mb-3"></i> <span id="uiDecor">أعمال الديكور والتصميم</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة نسيت كلمة المرور -->
+    <div class="modal fade" id="resetModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header"><h5 class="modal-title">استعادة كلمة المرور</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    <div class="mb-3"><label class="form-label small">كود الأمان (ADMIN-RESET-2026)</label><input type="password" id="resetCode" class="form-control"></div>
+                    <div class="mb-3"><label class="form-label small">كلمة المرور الجديدة</label><input type="password" id="newPass" class="form-control"></div>
+                    <button type="button" class="btn btn-danger w-100" onclick="confirmReset()">تحديث كلمة المرور</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentLang = localStorage.getItem('app_lang') || 'ar';
+
+        // التحقق الفوري عند تحميل الصفحة
+        window.onload = function() {
+            applyLang();
+            if(localStorage.getItem('is_logged') === 'true') {
+                showPage('mainPage');
+            } else {
+                showPage('loginPage');
+            }
+        };
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            const target = document.getElementById(pageId);
+            if(target) target.classList.add('active');
+        }
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'ar' ? 'en' : 'ar';
+            localStorage.setItem('app_lang', currentLang);
+            applyLang();
+        }
+
+        function applyLang() {
+            const isAr = currentLang === 'ar';
+            document.documentElement.lang = currentLang;
+            document.documentElement.dir = isAr ? 'rtl' : 'ltr';
+            
+            // تغيير ملف Bootstrap حسب اللغة
+            const bs = document.getElementById('bootstrapCSS');
+            if(isAr) {
+                bs.href = "https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css";
+            } else {
+                bs.href = "https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css";
+            }
+
+            document.querySelectorAll('.lang-toggle-text').forEach(el => el.innerText = isAr ? 'English' : 'العربية');
+            document.getElementById('langBtnText').innerText = isAr ? 'English' : 'العربية';
+
+            if(isAr) {
+                document.getElementById('uiTitle').innerText = "منصة المقاولات والديكور";
+                document.getElementById('uiSub').innerText = "تسجيل الدخول للنظام الإداري";
+                document.getElementById('labelUser').innerText = "اسم المستخدم";
+                document.getElementById('labelPass').innerText = "كلمة المرور";
+                document.getElementById('btnLoginText').innerText = "تسجيل الدخول";
+                document.getElementById('uiForgot').innerText = "نسيت كلمة مرور الآدمن؟";
+                document.getElementById('navBrand').innerText = "منصة المقاولات والديكور";
+                document.getElementById('uiLogout').innerText = "خروج";
+                document.getElementById('uiChoose').innerText = "اختر القسم للبدء";
+                document.getElementById('uiContracting').innerText = "مقاولات البناء";
+                document.getElementById('uiDecor').innerText = "أعمال الديكور والتصميم";
+            } else {
+                document.getElementById('uiTitle').innerText = "Contracting & Decor Platform";
+                document.getElementById('uiSub').innerText = "Administrative Login";
+                document.getElementById('labelUser').innerText = "Username";
+                document.getElementById('labelPass').innerText = "Password";
+                document.getElementById('btnLoginText').innerText = "Login";
+                document.getElementById('uiForgot').innerText = "Forgot Admin Password?";
+                document.getElementById('navBrand').innerText = "Contracting & Decor Platform";
+                document.getElementById('uiLogout').innerText = "Logout";
+                document.getElementById('uiChoose').innerText = "Choose Section to Start";
+                document.getElementById('uiContracting').innerText = "Building Contracting";
+                document.getElementById('uiDecor').innerText = "Interior Decor";
+            }
+        }
+
+        function doLogin() {
+            const u = document.getElementById('loginUsername').value.trim();
+            const p = document.getElementById('loginPassword').value.trim();
+            
+            // جلب كلمة المرور المخزنة أو الافتراضية
+            const savedPass = localStorage.getItem('admin_pass') || '123';
+
+            if(u === 'admin' && p === savedPass) {
+                localStorage.setItem('is_logged', 'true');
+                showPage('mainPage');
+            } else {
+                alert(currentLang === 'ar' ? 'اسم المستخدم أو كلمة المرور غير صحيحة!' : 'Invalid username or password!');
+            }
+        }
+
+        function doLogout() {
+            localStorage.removeItem('is_logged');
+            showPage('loginPage');
+        }
+
+        function openResetModal() {
+            const modal = new bootstrap.Modal(document.getElementById('resetModal'));
+            modal.show();
+        }
+
+        function confirmReset() {
+            const code = document.getElementById('resetCode').value.trim();
+            const newP = document.getElementById('newPass').value.trim();
+
+            if(code !== "ADMIN-RESET-2026") {
+                alert(currentLang === 'ar' ? 'كود الأمان خطأ!' : 'Invalid Security Code!');
+                return;
+            }
+            if(!newP) {
+                alert(currentLang === 'ar' ? 'أدخل كلمة المرور الجديدة' : 'Enter new password');
+                return;
+            }
+
+            localStorage.setItem('admin_pass', newP);
+            alert(currentLang === 'ar' ? 'تم تحديث كلمة المرور بنجاح! كلمة المرور الجديدة هي: ' + newP : 'Password updated successfully!');
+            bootstrap.Modal.getInstance(document.getElementById('resetModal')).hide();
+        }
+    </script>
+</body>
+</html>
