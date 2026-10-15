@@ -22,11 +22,20 @@
         }
         .bg-contracting { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); }
         .bg-decor { background: linear-gradient(135deg, #d4a373 0%, #a98467 100%); }
-        .printable-invoice { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .printable-invoice { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); border: 1px solid #ddd; }
         #syncStatus { font-size: 0.85rem; }
         .company-logo { max-height: 50px; object-fit: contain; }
-        .invoice-logo { max-height: 80px; object-fit: contain; }
         .stat-card { border-right: 4px solid #0d6efd; border-radius: 8px; background: white; padding: 15px; }
+        
+        /* ترويسة الفاتورة الرسمية بناءً على الصورة */
+        .invoice-letterhead {
+            border-bottom: 2px solid #a98467;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .invoice-letterhead h2 { font-weight: 700; color: #1e3c72; }
+        .invoice-letterhead p { margin: 0; font-size: 0.85rem; color: #555; }
+
         @media print {
             body * { visibility: hidden; }
             #printableArea, #printableArea *, #reportsPrintArea, #reportsPrintArea * { visibility: visible; }
@@ -46,9 +55,9 @@
                 </div>
                 <div id="loginLogoContainer" class="mb-3">
                     <i class="fas fa-building-columns fa-3x text-primary" id="defaultLoginIcon"></i>
-                    <img id="loginCompanyLogo" src="" class="invoice-logo d-none" alt="Logo">
+                    <img id="loginCompanyLogo" src="" class="company-logo d-none" alt="Logo">
                 </div>
-                <h3 class="fw-bold mb-1" id="loginCompanyNameDisplay">منصة المقاولات والديكور</h3>
+                <h3 class="fw-bold mb-1" id="loginCompanyNameDisplay">منارة وادي العين</h3>
                 <p class="text-muted small mb-3" data-i18n="loginSub">تسجيل الدخول للنظام الإداري</p>
                 
                 <div class="mb-3 text-start">
@@ -71,7 +80,7 @@
             <div class="container">
                 <span class="navbar-brand d-flex align-items-center gap-2">
                     <img id="headerLogo" src="" class="company-logo d-none" alt="Logo">
-                    <span id="headerCompanyName"><i class="fas fa-hard-hat me-2"></i>منصة المقاولات والديكور</span>
+                    <span id="headerCompanyName"><i class="fas fa-hard-hat me-2"></i>منارة وادي العين للمقاولات والديكور</span>
                 </span>
                 <div class="d-flex align-items-center gap-2">
                     <span id="syncStatus" class="text-info me-2"><i class="fas fa-check-circle me-1"></i> متصل</span>
@@ -99,7 +108,7 @@
         </div>
     </div>
 
-    <!-- 3. التقارير المالية المتطورة -->
+    <!-- 3. التقارير المالية -->
     <div id="reportsPage" class="page">
         <nav class="navbar navbar-dark bg-dark mb-4">
             <div class="container">
@@ -108,7 +117,6 @@
             </div>
         </nav>
         <div class="container">
-            <!-- أدوات الفلترة وتحديد الفترة -->
             <div class="card card-custom p-3 mb-4 no-print">
                 <h5 class="fw-bold mb-3"><i class="fas fa-filter me-2"></i>خيارات فلترة التقرير</h5>
                 <div class="row g-3 align-items-end">
@@ -137,11 +145,9 @@
                 </div>
             </div>
 
-            <!-- عرض التقرير المطبوع -->
             <div id="reportsPrintArea" class="bg-white p-4 rounded shadow-sm">
                 <div class="text-center mb-4 border-bottom pb-3">
-                    <img id="reportLogoImg" src="" class="invoice-logo d-none mb-2" alt="Logo">
-                    <h3 class="fw-bold" id="reportCompanyTitle">اسم الشركة</h3>
+                    <h3 class="fw-bold" id="reportCompanyTitle">منارة وادي العين</h3>
                     <h5 class="text-muted" id="reportSubTitle">تقرير الأداء المالي الشامل</h5>
                     <p class="small text-secondary mb-0"><span data-i18n="reportGenDate">تاريخ الاستخراج:</span> <span id="reportGenDateValue"></span> | <span id="reportRangeLabel">الفترة: الكل</span></p>
                 </div>
@@ -283,7 +289,7 @@
         </div>
     </div>
 
-    <!-- 7. قسم الديكور -->
+    <!-- 7. قسم الديكور المعدل (جدول بنود متسلسلة متعددة مع ترويسة رسمية) -->
     <div id="decorPage" class="page">
         <nav class="navbar navbar-dark bg-warning text-dark mb-4">
             <div class="container">
@@ -293,46 +299,108 @@
         </nav>
         <div class="container">
             <div class="row">
+                <!-- قسم إدخال المعاملة والبنود -->
                 <div class="col-md-5 mb-4 no-print">
                     <div class="card card-custom p-4">
-                        <h5 class="fw-bold mb-3" data-i18n="decorInputTitle">إدخال تفاصيل معاملة ديكور</h5>
-                        <div>
-                            <div class="mb-2"><label class="form-label" data-i18n="clientName">اسم العميل</label><input type="text" class="form-control" id="decClientName"></div>
-                            <div class="mb-2"><label class="form-label" data-i18n="clientPhone">رقم الواتساب</label><input type="text" class="form-control" id="decClientPhone" placeholder="96899000000"></div>
-                            <div class="mb-2"><label class="form-label" data-i18n="workType">نوع الخدمة</label><input type="text" class="form-control" id="decWorkType" placeholder="تكسية جدران..."></div>
-                            <div class="mb-2"><label class="form-label" data-i18n="totalCost">التكلفة الإجمالية</label><input type="number" class="form-control" id="decTotal"></div>
-                            <div class="mb-2"><label class="form-label" data-i18n="paidAmount">المبلغ المدفوع</label><input type="number" class="form-control" id="decPaid"></div>
-                            <div class="mb-3"><label class="form-label" data-i18n="notes">ملاحظات</label><textarea class="form-control" id="decNotes" rows="2"></textarea></div>
-                            <button type="button" class="btn btn-warning w-100 fw-bold" onclick="generateDecorInvoice()" data-i18n="btnUpdateInvoice">تحديث المعاينة وتدقيق الحفظ</button>
+                        <h5 class="fw-bold mb-3"><i class="fas fa-file-invoice me-2"></i>تفاصيل فاتورة الديكور</h5>
+                        
+                        <div class="mb-2"><label class="form-label small fw-bold">اسم العميل</label><input type="text" class="form-control form-control-sm" id="decClientName"></div>
+                        <div class="mb-2"><label class="form-label small fw-bold">رقم الواتساب</label><input type="text" class="form-control form-control-sm" id="decClientPhone" placeholder="96899000000"></div>
+                        <div class="mb-3"><label class="form-label small fw-bold">المبلغ المدفوع مقدمًا</label><input type="number" class="form-control form-control-sm" id="decPaid" value="0" oninput="calculateDecorTotals()"></div>
+                        
+                        <hr>
+                        <h6 class="fw-bold mb-2 text-primary"><i class="fas fa-list-ol me-1"></i>إضافة بنود الخدمة / المواد</h6>
+                        <div class="bg-light p-2 rounded mb-2 border">
+                            <div class="mb-2"><input type="text" class="form-control form-control-sm" id="itemDesc" placeholder="اسم المادة/الخدمة (مثال: تركيب جيبسون بورد)"></div>
+                            <div class="row g-2 mb-2">
+                                <div class="col-6"><input type="number" class="form-control form-control-sm" id="itemQty" placeholder="الكمية (مثال: 35)"></div>
+                                <div class="col-6"><input type="number" class="form-control form-control-sm" id="itemPrice" placeholder="سعر الوحدة"></div>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-primary w-100" onclick="addDecorItem()"><i class="fas fa-plus-circle me-1"></i> إضافة البند للجدول</button>
                         </div>
+
+                        <div class="table-responsive mb-2">
+                            <table class="table table-sm table-bordered text-center align-middle" style="font-size:0.8rem;">
+                                <thead class="table-dark">
+                                    <tr><th>#</th><th>المادة</th><th>الكمية</th><th>السعر</th><th>المجموع</th><th>إجراء</th></tr>
+                                </thead>
+                                <tbody id="decorItemsInputTable"></tbody>
+                            </table>
+                        </div>
+
+                        <div class="mb-3"><label class="form-label small fw-bold">ملاحظات وشروط</label><textarea class="form-control form-control-sm" id="decNotes" rows="2"></textarea></div>
+                        <button type="button" class="btn btn-warning w-100 fw-bold" onclick="generateDecorInvoice()"><i class="fas fa-sync me-1"></i> تحديث الفاتورة وتأكيد الحفظ</button>
                     </div>
                 </div>
 
+                <!-- معاينة الفاتورة القابلة للطباعة بترويسة منارة وادي العين -->
                 <div class="col-md-7">
                     <div id="printableArea" class="printable-invoice">
-                        <div class="text-center mb-4 border-bottom pb-3">
-                            <img id="invoiceLogoImg" src="" class="invoice-logo d-none mb-2" alt="Logo">
-                            <h3 class="fw-bold" id="invoiceCompanyName">اسم الشركة</h3>
-                            <p class="text-muted mb-0" data-i18n="decorInvoiceTitle">فاتورة / عقد عمل ديكور</p>
+                        <!-- ترويسة منارة وادي العين بناءً على عصبة الزبون -->
+                        <div class="invoice-letterhead">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h2 class="mb-0">منارة وادي العـيــن</h2>
+                                    <p class="fw-bold">MANARAT WADI ALAIN</p>
+                                </div>
+                                <div class="text-center">
+                                    <i class="fas fa-layer-group fa-3x text-primary mb-1"></i>
+                                    <div class="fw-bold text-uppercase" style="font-size: 0.75rem; letter-spacing: 1px;">ROZANA</div>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between mt-2 pt-2 border-top" style="font-size: 0.75rem;">
+                                <span><strong>س.ت / CR No:</strong> 1366863</span>
+                                <span><strong>الرمز الضريبي / Tax Card:</strong> 1685918</span>
+                                <span><strong>ر.ب / P.C:</strong> 611</span>
+                            </div>
                         </div>
+
                         <div class="row mb-3">
-                            <div class="col-6"><strong><span data-i18n="thDate">التاريخ</span>:</strong> <span id="viewDate">-</span></div>
-                            <div class="col-6 text-end"><strong><span data-i18n="clientName">العميل</span>:</strong> <span id="viewClientName">-</span></div>
+                            <div class="col-6"><strong>التاريخ:</strong> <span id="viewDate">-</span></div>
+                            <div class="col-6 text-end"><strong>العميل:</strong> <span id="viewClientName">-</span></div>
                         </div>
-                        <table class="table table-bordered my-3">
-                            <thead class="table-light"><tr><th data-i18n="thDesc">الوصف</th><th data-i18n="thCost">المبلغ</th></tr></thead>
-                            <tbody>
-                                <tr><td id="viewWorkType">تفاصيل الخدمة...</td><td id="viewTotal">0 OMR</td></tr>
-                                <tr><td data-i18n="paidAmount">المدفوع</td><td id="viewPaid" class="text-success">0 OMR</td></tr>
-                                <tr><td><strong data-i18n="projRemaining">المتبقي</strong></td><td id="viewRemaining" class="text-danger fw-bold">0 OMR</td></tr>
+
+                        <table class="table table-bordered my-3 align-middle text-center" style="font-size: 0.9rem;">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 8%;">#</th>
+                                    <th>اسم المادة / الخدمة</th>
+                                    <th style="width: 15%;">الكمية</th>
+                                    <th style="width: 20%;">سعر الوحدة</th>
+                                    <th style="width: 20%;">المجموع</th>
+                                </tr>
+                            </thead>
+                            <tbody id="viewDecorItemsBody">
+                                <tr><td colspan="5" class="text-muted">لم يتم إضافة أي بنود بعد.</td></tr>
                             </tbody>
+                            <tfoot class="table-light fw-bold">
+                                <tr>
+                                    <td colspan="4" class="text-end">الإجمالي الكلي:</td>
+                                    <td id="viewTotal" class="text-primary">0 OMR</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="4" class="text-end text-success">المبلغ المدفوع:</td>
+                                    <td id="viewPaid" class="text-success">0 OMR</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="4" class="text-end text-danger">المبلغ المتبقي:</td>
+                                    <td id="viewRemaining" class="text-danger fw-bold">0 OMR</td>
+                                </tr>
+                            </tfoot>
                         </table>
-                        <p><strong><span data-i18n="notes">ملاحظات</span>:</strong> <span id="viewNotes">-</span></p>
-                        <div class="mt-4 pt-3 border-top text-center text-muted small" data-i18n="thanksMsg">شكراً لتعاملكم معنا!</div>
+
+                        <p class="mb-1"><strong>ملاحظات وشروط:</strong> <span id="viewNotes">-</span></p>
+                        
+                        <!-- أسفل الفاتورة بتفاصيل العنوان والأرقام من العصبة المرفقة -->
+                        <div class="mt-4 pt-3 border-top text-center text-muted" style="font-size: 0.75rem;">
+                            <p class="mb-0">مسقط، سلطنة عمان | Muscat, Sultanate of Oman - المعبيلة الجنوبية / السيب | South Al Mabilah / Al Seeb</p>
+                            <p class="mb-0">هاتف نقال / Tel: +968 95868568 | ايميل / Email: ahmed95868568@gmail.com</p>
+                        </div>
                     </div>
+                    
                     <div class="mt-3 d-flex gap-2 no-print">
-                        <button class="btn btn-success flex-fill" onclick="sendWhatsApp()"><i class="fab fa-whatsapp me-1"></i> <span data-i18n="btnSendWA">إرسال عبر الواتساب</span></button>
-                        <button class="btn btn-secondary flex-fill" onclick="window.print()"><i class="fas fa-print me-1"></i> <span data-i18n="btnPrint">طباعة الفاتورة</span></button>
+                        <button class="btn btn-success flex-fill" onclick="sendWhatsApp()"><i class="fab fa-whatsapp me-1"></i> إرسال عبر الواتساب</button>
+                        <button class="btn btn-secondary flex-fill" onclick="window.print()"><i class="fas fa-print me-1"></i> طباعة الفاتورة</button>
                     </div>
                 </div>
             </div>
@@ -376,7 +444,7 @@
         let currentLang = localStorage.getItem('app_lang') || 'ar';
 
         let dbData = {
-            companyName: "منصة المقاولات والديكور",
+            companyName: "منارة وادي العين",
             projects: [],
             decorInvoices: [],
             users: [
@@ -387,6 +455,7 @@
 
         let currentUser = null;
         let activeProjectId = null;
+        let currentDecorItems = []; // قائمة بنود الديكور المؤقتة
 
         const i18n = {
             ar: {
@@ -430,7 +499,6 @@
             }
         };
 
-        // تحميل أولي آمن
         (function initLocalData() {
             try {
                 const localSaved = localStorage.getItem('app_system_db');
@@ -441,7 +509,7 @@
                         dbData.decorInvoices = parsed.decorInvoices || [];
                         if(parsed.users && Array.isArray(parsed.users) && parsed.users.length > 0) dbData.users = parsed.users;
                         dbData.logo = parsed.logo || "";
-                        dbData.companyName = parsed.companyName || "منصة المقاولات والديكور";
+                        dbData.companyName = parsed.companyName || "منارة وادي العين";
                     }
                 }
             } catch(e) {}
@@ -594,13 +662,11 @@
         }
 
         function renderCompanyTitles() {
-            const name = dbData.companyName || (currentLang === 'ar' ? "منصة المقاولات والديكور" : "Contracting & Decor Platform");
+            const name = dbData.companyName || "منارة وادي العين";
             const headerTitle = document.getElementById('headerCompanyName');
             if(headerTitle) headerTitle.innerHTML = `<i class="fas fa-hard-hat me-2"></i>${name}`;
             const loginTitle = document.getElementById('loginCompanyNameDisplay');
             if(loginTitle) loginTitle.innerText = name;
-            const invTitle = document.getElementById('invoiceCompanyName');
-            if(invTitle) invTitle.innerText = name;
             const repTitle = document.getElementById('reportCompanyTitle');
             if(repTitle) repTitle.innerText = name;
             const compInput = document.getElementById('companyNameInput');
@@ -631,8 +697,6 @@
             const lLogo = document.getElementById('loginCompanyLogo');
             const dIcon = document.getElementById('defaultLoginIcon');
             const pLogo = document.getElementById('logoPreview');
-            const iLogo = document.getElementById('invoiceLogoImg');
-            const rLogo = document.getElementById('reportLogoImg');
             const noLogoText = document.getElementById('noLogoText');
 
             if (logoSrc) {
@@ -640,20 +704,126 @@
                 if(lLogo) { lLogo.src = logoSrc; lLogo.classList.remove('d-none'); }
                 if(dIcon) dIcon.classList.add('d-none');
                 if(pLogo) { pLogo.src = logoSrc; pLogo.classList.remove('d-none'); }
-                if(iLogo) { iLogo.src = logoSrc; iLogo.classList.remove('d-none'); }
-                if(rLogo) { rLogo.src = logoSrc; rLogo.classList.remove('d-none'); }
                 if(noLogoText) noLogoText.classList.add('d-none');
             } else {
                 if(hLogo) hLogo.classList.add('d-none');
                 if(lLogo) lLogo.classList.add('d-none');
                 if(dIcon) dIcon.classList.remove('d-none');
                 if(pLogo) pLogo.classList.add('d-none');
-                if(iLogo) iLogo.classList.add('d-none');
-                if(rLogo) rLogo.classList.add('d-none');
                 if(noLogoText) noLogoText.classList.remove('d-none');
             }
         }
 
+        // --- دوال قسم الديكور (إضافة بنود متعددة، حساب الأسعار، والمعاينة) ---
+        function addDecorItem() {
+            const desc = document.getElementById('itemDesc').value.trim();
+            const qty = parseFloat(document.getElementById('itemQty').value) || 0;
+            const price = parseFloat(document.getElementById('itemPrice').value) || 0;
+
+            if(!desc || qty <= 0 || price <= 0) {
+                alert('يرجى تعبئة اسم المادة والكمية والسعر بشكل صحيح');
+                return;
+            }
+
+            const total = qty * price;
+            currentDecorItems.push({ id: Date.now(), desc, qty, price, total });
+
+            document.getElementById('itemDesc').value = '';
+            document.getElementById('itemQty').value = '';
+            document.getElementById('itemPrice').value = '';
+
+            renderDecorItemsInputTable();
+            generateDecorInvoice();
+        }
+
+        function removeDecorItem(id) {
+            currentDecorItems = currentDecorItems.filter(item => item.id !== id);
+            renderDecorItemsInputTable();
+            generateDecorInvoice();
+        }
+
+        function renderDecorItemsInputTable() {
+            const tbody = document.getElementById('decorItemsInputTable');
+            tbody.innerHTML = '';
+            currentDecorItems.forEach((item, index) => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td class="text-start">${item.desc}</td>
+                        <td>${item.qty}</td>
+                        <td>${item.price}</td>
+                        <td>${item.total} OMR</td>
+                        <td><button class="btn btn-sm btn-outline-danger py-0 px-1" onclick="removeDecorItem(${item.id})"><i class="fas fa-times"></i></button></td>
+                    </tr>
+                `;
+            });
+        }
+
+        function calculateDecorTotals() {
+            generateDecorInvoice();
+        }
+
+        function generateDecorInvoice() {
+            const clientName = document.getElementById('decClientName').value || '-';
+            const paid = parseFloat(document.getElementById('decPaid').value) || 0;
+            const notes = document.getElementById('decNotes').value || '-';
+
+            document.getElementById('viewClientName').innerText = clientName;
+            document.getElementById('viewNotes').innerText = notes;
+            document.getElementById('viewDate').innerText = new Date().toLocaleDateString('ar-EG');
+
+            const viewBody = document.getElementById('viewDecorItemsBody');
+            viewBody.innerHTML = '';
+
+            let totalGrand = 0;
+
+            if(currentDecorItems.length === 0) {
+                viewBody.innerHTML = '<tr><td colspan="5" class="text-muted">لم يتم إضافة أي بنود بعد.</td></tr>';
+            } else {
+                currentDecorItems.forEach((item, index) => {
+                    totalGrand += item.total;
+                    viewBody.innerHTML += `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td class="text-start fw-bold">${item.desc}</td>
+                            <td>${item.qty}</td>
+                            <td>${item.price} OMR</td>
+                            <td class="fw-bold">${item.total} OMR</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            const remaining = totalGrand - paid;
+
+            document.getElementById('viewTotal').innerText = totalGrand + ' OMR';
+            document.getElementById('viewPaid').innerText = paid + ' OMR';
+            document.getElementById('viewRemaining').innerText = remaining + ' OMR';
+
+            // حفظ المعاملة في السحابة والذاكرة
+            if(!dbData.decorInvoices) dbData.decorInvoices = [];
+            dbData.decorInvoices.push({ id: Date.now(), clientName, items: currentDecorItems, total: totalGrand, paid, date: new Date().toISOString() });
+            saveDataToDrive();
+        }
+
+        function sendWhatsApp() {
+            const phone = document.getElementById('decClientPhone').value;
+            if(!phone) { alert('يرجى إدخال رقم الهاتف أولاً'); return; }
+            const clientName = document.getElementById('decClientName').value;
+            const total = document.getElementById('viewTotal').innerText;
+            const paid = document.getElementById('viewPaid').innerText;
+            const remaining = document.getElementById('viewRemaining').innerText;
+
+            let itemsMsg = "";
+            currentDecorItems.forEach((it, i) => {
+                itemsMsg += `\n ${i+1}. ${it.desc} - الكمية: ${it.qty} - المجموع: ${it.total} OMR`;
+            });
+
+            const msg = `مرحباً بك ${clientName}، تفاصيل فاتورة الديكور الخاصة بك من (منارة وادي العين):\n${itemsMsg}\n\n- الإجمالي: ${total}\n- المدفوع: ${paid}\n- المتبقي: ${remaining}\n\nشكراً لتعاملك معنا!`;
+            window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+        }
+
+        // --- دوال باقي أجزاء النظام (التقارير والمشاريع) ---
         function handlePeriodTypeChange() {
             const val = document.getElementById('reportPeriodType').value;
             const startBox = document.getElementById('startDateBox');
@@ -669,7 +839,7 @@
 
         function generateReports() {
             const dateVal = document.getElementById('reportGenDateValue');
-            if(dateVal) dateVal.innerText = new Date().toLocaleDateString(currentLang === 'ar' ? 'ar-EG' : 'en-US');
+            if(dateVal) dateVal.innerText = new Date().toLocaleDateString('ar-EG');
             
             const periodType = document.getElementById('reportPeriodType').value;
             const rangeLabel = document.getElementById('reportRangeLabel');
@@ -926,149 +1096,4 @@
         function editProject(id) {
             const p = dbData.projects.find(item => item.id === id);
             if(!p) return;
-            document.getElementById('projectModalTitle').innerText = currentLang === 'ar' ? 'تعديل مشروع' : 'Edit Project';
-            document.getElementById('editingProjectId').value = p.id;
-            document.getElementById('pName').value = p.name;
-            document.getElementById('pTotal').value = p.total;
-            
-            const modal = new bootstrap.Modal(document.getElementById('newProjectModal'));
-            modal.show();
-        }
-
-        function saveProject() {
-            const editingId = document.getElementById('editingProjectId').value;
-            const name = document.getElementById('pName').value.trim();
-            const total = parseFloat(document.getElementById('pTotal').value);
-            if(!name || isNaN(total)) { alert('يرجى إدخال البيانات كاملة'); return; }
-
-            if(editingId) {
-                const p = dbData.projects.find(item => item.id == editingId);
-                if(p) { p.name = name; p.total = total; }
-            } else {
-                dbData.projects.push({ id: Date.now(), name, total, materials: [] });
-            }
-
-            saveDataToDrive();
-            renderProjects();
-            
-            const modalEl = document.getElementById('newProjectModal');
-            const instance = bootstrap.Modal.getInstance(modalEl);
-            if(instance) instance.hide();
-        }
-
-        function deleteProject(id) {
-            if(confirm('هل أنت متأكد من حذف هذا المشروع؟')) {
-                dbData.projects = dbData.projects.filter(item => item.id !== id);
-                saveDataToDrive();
-                renderProjects();
-            }
-        }
-
-        function openProjectDetails(id) {
-            activeProjectId = id;
-            const project = dbData.projects.find(p => p.id === id);
-            document.getElementById('currentProjectTitle').innerText = `${currentLang === 'ar' ? 'مشروع' : 'Project'}: ${project.name}`;
-            renderProjectStats();
-            showPage('projectDetailsPage');
-        }
-
-        function filterMaterials() {
-            const query = document.getElementById('searchMaterialInput').value.toLowerCase();
-            renderProjectStats(query);
-        }
-
-        function renderProjectStats(query = "") {
-            const project = dbData.projects.find(p => p.id === activeProjectId);
-            if(!project) return;
-
-            const totalExpenses = project.materials ? project.materials.reduce((sum, m) => sum + m.cost, 0) : 0;
-            const remaining = project.total - totalExpenses;
-
-            document.getElementById('projTotalCostVal').innerText = project.total + ' OMR';
-            document.getElementById('projTotalExpenses').innerText = totalExpenses + ' OMR';
-            document.getElementById('projRemainingCost').innerText = remaining + ' OMR';
-
-            const table = document.getElementById('materialsTableBody');
-            table.innerHTML = '';
-            
-            let mats = project.materials || [];
-            if(query) mats = mats.filter(m => m.name.toLowerCase().includes(query));
-
-            const showDelete = currentUser && currentUser.perms && currentUser.perms.delete;
-
-            mats.forEach((m, idx) => {
-                table.innerHTML += `
-                    <tr>
-                        <td>${idx + 1}</td>
-                        <td>${m.name}</td>
-                        <td>${m.cost} OMR</td>
-                        <td>${m.date}</td>
-                        <td class="action-col">${showDelete ? `<button class="btn btn-danger btn-sm" onclick="deleteMaterial(${m.id})">${currentLang === 'ar' ? 'حذف' : 'Delete'}</button>` : '-'}</td>
-                    </tr>
-                `;
-            });
-        }
-
-        function addNewMaterial() {
-            const name = document.getElementById('mName').value.trim();
-            const cost = parseFloat(document.getElementById('mCost').value);
-            const date = document.getElementById('mDate').value;
-            if(!name || isNaN(cost) || !date) { alert('يرجى تعبئة بيانات المادة كاملة'); return; }
-
-            const project = dbData.projects.find(p => p.id === activeProjectId);
-            if(!project.materials) project.materials = [];
-            project.materials.push({ id: Date.now(), name, cost, date });
-            
-            saveDataToDrive();
-            renderProjectStats();
-
-            const modalEl = document.getElementById('addMaterialModal');
-            const instance = bootstrap.Modal.getInstance(modalEl);
-            if(instance) instance.hide();
-            document.getElementById('mName').value = '';
-            document.getElementById('mCost').value = '';
-            document.getElementById('mDate').value = '';
-        }
-
-        function deleteMaterial(mId) {
-            const project = dbData.projects.find(p => p.id === activeProjectId);
-            project.materials = project.materials.filter(m => m.id !== mId);
-            saveDataToDrive();
-            renderProjectStats();
-        }
-
-        function generateDecorInvoice() {
-            const clientName = document.getElementById('decClientName').value || '-';
-            const workType = document.getElementById('decWorkType').value || '-';
-            const total = parseFloat(document.getElementById('decTotal').value) || 0;
-            const paid = parseFloat(document.getElementById('decPaid').value) || 0;
-            const notes = document.getElementById('decNotes').value || '-';
-
-            document.getElementById('viewClientName').innerText = clientName;
-            document.getElementById('viewWorkType').innerText = workType;
-            document.getElementById('viewTotal').innerText = total + ' OMR';
-            document.getElementById('viewPaid').innerText = paid + ' OMR';
-            document.getElementById('viewRemaining').innerText = (total - paid) + ' OMR';
-            document.getElementById('viewNotes').innerText = notes;
-            document.getElementById('viewDate').innerText = new Date().toLocaleDateString(currentLang === 'ar' ? 'ar-EG' : 'en-US');
-
-            if(!dbData.decorInvoices) dbData.decorInvoices = [];
-            dbData.decorInvoices.push({ id: Date.now(), clientName, workType, total, paid, date: new Date().toISOString() });
-            saveDataToDrive();
-        }
-
-        function sendWhatsApp() {
-            const phone = document.getElementById('decClientPhone').value;
-            if(!phone) { alert('يرجى إدخال رقم الهاتف أولاً'); return; }
-            const clientName = document.getElementById('decClientName').value;
-            const workType = document.getElementById('decWorkType').value;
-            const total = document.getElementById('decTotal').value;
-            const paid = document.getElementById('decPaid').value;
-            const remaining = total - paid;
-
-            const msg = `مرحباً بك ${clientName}، تفاصيل معاملة الديكور الخاصة بك:\n\n- نوع العمل: ${workType}\n- الإجمالي: ${total} OMR\n- المدفوع: ${paid} OMR\n- المتبقي: ${remaining} OMR\n\nشكراً لتعاملك معنا!`;
-            window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
-        }
-    </script>
-</body>
-</html>
+            document.getElementById('projectModalTitle').innerText = currentLang === 'ar' ? 'تع
