@@ -508,8 +508,8 @@
                 if (localSaved) {
                     const parsed = JSON.parse(localSaved);
                     if(parsed && typeof parsed === 'object') {
-                        dbData.projects = parsed.projects || [];
-                        dbData.decorInvoices = parsed.decorInvoices || [];
+                        if(parsed.projects && parsed.projects.length > 0) dbData.projects = parsed.projects;
+                        if(parsed.decorInvoices && parsed.decorInvoices.length > 0) dbData.decorInvoices = parsed.decorInvoices;
                         if(parsed.users && Array.isArray(parsed.users) && parsed.users.length > 0) dbData.users = parsed.users;
                         dbData.logo = parsed.logo || "";
                         dbData.companyName = parsed.companyName || "منارة وادي العين";
@@ -706,7 +706,7 @@
             const notes = document.getElementById('decNotes').value || '-';
 
             if(!civilId) {
-                alert('عذراً، الرقم المدني إلزامي ولا يمكن حفظ فاتورة الديكور بدونه!');
+                alert('⚠️ عذراً، الرقم المدني إلزامي! لا يمكن حفظ الفاتورة بدون إدخال الرقم المدني.');
                 return;
             }
 
@@ -878,18 +878,22 @@
                 .then(res => res.json())
                 .then(data => {
                     if(data && typeof data === 'object') {
-                        if(Array.isArray(data)) {
-                            dbData.projects = data;
-                        } else {
-                            dbData.projects = data.projects || dbData.projects;
-                            dbData.decorInvoices = data.decorInvoices || dbData.decorInvoices;
-                            if(data.users && Array.isArray(data.users)) dbData.users = data.users;
-                            if(data.logo !== undefined) dbData.logo = data.logo;
-                            if(data.companyName) dbData.companyName = data.companyName;
+                        // دمج آمن يحافظ على البيانات المحلية ولا يمسحها إذا كانت السحابة فارغة
+                        if(data.projects && data.projects.length > 0) {
+                            dbData.projects = data.projects;
                         }
+                        if(data.decorInvoices && data.decorInvoices.length > 0) {
+                            dbData.decorInvoices = data.decorInvoices;
+                        }
+                        if(data.users && Array.isArray(data.users) && data.users.length > 0) {
+                            dbData.users = data.users;
+                        }
+                        if(data.logo !== undefined) dbData.logo = data.logo;
+                        if(data.companyName) dbData.companyName = data.companyName;
                     }
                     localStorage.setItem('app_system_db', JSON.stringify(dbData));
                     if(statusEl) statusEl.innerHTML = '<i class="fas fa-check-circle me-1"></i> Connected';
+                    renderProjects();
                 })
                 .catch(() => {
                     if(statusEl) statusEl.innerHTML = '<i class="fas fa-check-circle me-1"></i> Offline Mode';
@@ -974,7 +978,7 @@
             }
 
             if(filtered.length === 0) {
-                list.innerHTML = '<div class="text-center text-muted py-4">لا توجد مشاريع مطابقة للبحث.</div>';
+                list.innerHTML = '<div class="text-center text-muted py-4">لا توجد مشاريع مسجلة حالياً أو مطابقة للبحث.</div>';
                 return;
             }
 
@@ -990,7 +994,7 @@
                                     <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2" onclick="deleteProject(${p.id})" title="حذف"><i class="fas fa-trash"></i></button>
                                 </div>
                             </div>
-                            <p class="small text-muted mb-0">الرقم المدني: <strong class="text-dark">${p.civilId || '-'}</strong> | الهاتف: ${p.phone || '-'}</p>
+                            <p class="small text-muted mb-0">الرقم المدني: <strong class="text-dark">${p.civilId || 'غير مسجل'}</strong> | الهاتف: ${p.phone || '-'}</p>
                             <hr class="my-2">
                             <p class="text-muted mb-1">الإجمالي: ${p.total} OMR</p>
                             <p class="text-danger mb-1">المصروفات: ${totalExp} OMR</p>
@@ -1032,7 +1036,7 @@
             const phone = document.getElementById('pPhone').value.trim();
             const total = parseFloat(document.getElementById('pTotal').value);
             
-            // التحقق الجبري الإلزامي من الرقم المدني
+            // التحقق الإلزامي الجبري من الرقم المدني
             if(!name || !civilId || isNaN(total)) { 
                 alert('⚠️ عذراً، الرقم المدني إلزامي! يرجى إدخال اسم المشروع، الرقم المدني، والقيمة الإجمالية قبل الحفظ.'); 
                 return; 
