@@ -34,7 +34,7 @@
         }
         .invoice-letterhead h2 { font-weight: 700; color: #1e3c72; }
         .invoice-letterhead p { margin: 0; font-size: 0.85rem; color: #555; }
-        .rozana-real-logo { max-height: 75px; object-fit: contain; }
+        .invoice-dynamic-logo { max-height: 60px; object-fit: contain; }
 
         @media print {
             body * { visibility: hidden; }
@@ -191,7 +191,7 @@
                             <button class="btn btn-sm btn-primary w-100 mt-2" id="saveCompanyNameBtn"><i class="fas fa-save me-1"></i> حفظ الاسم</button>
                         </div>
                         <hr>
-                        <h6 class="fw-bold mb-2"><i class="fas fa-image me-2"></i>شعار الشركة</h6>
+                        <h6 class="fw-bold mb-2"><i class="fas fa-image me-2"></i>شعار الشركة (يظهر في الترويسات والفواتير)</h6>
                         <div class="text-center mb-3">
                             <img id="logoPreview" src="" class="img-thumbnail d-none" style="max-height: 100px;">
                             <p id="noLogoText" class="text-muted small">لا يوجد شعار مخصص حالياً</p>
@@ -348,9 +348,9 @@
                                     <p class="fw-bold">MANARAT WADI ALAIN</p>
                                 </div>
                                 <div class="text-center">
-                                    <!-- شعار ROZANA الحقيقي والكامل الذي أرسلته -->
-                                    <img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAAPAA8BAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=" id="rozanaRealLogoImg" alt="ROZANA Logo" class="rozana-real-logo mb-1">
-                                    <div class="fw-bold text-dark" style="font-size: 0.65rem; letter-spacing: 0.5px;">ROZANA <span class="text-muted" style="font-size: 0.55rem;">MARKTEING - ADVERTISING AGENCY</span></div>
+                                    <!-- شعار الشركة الديناميكي المربوط بصفحة الإعدادات -->
+                                    <img id="invoiceLogoDisplay" src="" class="invoice-dynamic-logo d-none mb-1" alt="Logo">
+                                    <div id="invoiceLogoPlaceholder" class="fw-bold text-primary" style="font-size: 0.8rem;">ROZANA</div>
                                 </div>
                             </div>
                             <div class="d-flex justify-content-between mt-2 pt-2 border-top" style="font-size: 0.75rem;">
@@ -449,10 +449,8 @@
     <!-- JS dependencies -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // رابط السحابة الجديد الخاص بالزبون
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxx5y5o7oZC9krmQn1WWm9kzRevoaHHdBOz_ssmY8wo6sXnD8GTurd1LhljbwjaCWz2/exec";
-        
-        const CURRENT_APP_VERSION = "2.8"; 
+        const CURRENT_APP_VERSION = "2.9"; 
         
         let dbData = {
             companyName: "منارة وادي العين",
@@ -667,6 +665,10 @@
             const dIcon = document.getElementById('defaultLoginIcon');
             const pLogo = document.getElementById('logoPreview');
             const noLogoText = document.getElementById('noLogoText');
+            
+            // عناصر الشعار في فاتورة الديكور
+            const invoiceLogoImg = document.getElementById('invoiceLogoDisplay');
+            const invoicePlaceholder = document.getElementById('invoiceLogoPlaceholder');
 
             if (logoSrc) {
                 if(hLogo) { hLogo.src = logoSrc; hLogo.classList.remove('d-none'); }
@@ -674,12 +676,20 @@
                 if(dIcon) dIcon.classList.add('d-none');
                 if(pLogo) { pLogo.src = logoSrc; pLogo.classList.remove('d-none'); }
                 if(noLogoText) noLogoText.classList.add('d-none');
+
+                // تحديث شعار فاتورة الديكور تلقائياً
+                if(invoiceLogoImg) { invoiceLogoImg.src = logoSrc; invoiceLogoImg.classList.remove('d-none'); }
+                if(invoicePlaceholder) invoicePlaceholder.classList.add('d-none');
             } else {
                 if(hLogo) hLogo.classList.add('d-none');
                 if(lLogo) lLogo.classList.add('d-none');
                 if(dIcon) dIcon.classList.remove('d-none');
                 if(pLogo) pLogo.classList.add('d-none');
                 if(noLogoText) noLogoText.classList.remove('d-none');
+
+                // إرجاع النص الافتراضي في فاتورة الديكور إذا لم يوجد شعار
+                if(invoiceLogoImg) invoiceLogoImg.classList.add('d-none');
+                if(invoicePlaceholder) invoicePlaceholder.classList.remove('d-none');
             }
         }
 
@@ -925,6 +935,7 @@
                     localStorage.setItem('app_system_db', JSON.stringify(dbData));
                     if(statusEl) statusEl.innerHTML = '<i class="fas fa-check-circle me-1"></i> Connected';
                     renderProjects();
+                    renderLogo();
                 })
                 .catch(() => {
                     if(statusEl) statusEl.innerHTML = '<i class="fas fa-check-circle me-1"></i> Offline Mode';
