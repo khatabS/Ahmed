@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" id="htmlRoot">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام إدارة المقاولات والديكور المتكامل</title>
+    <title id="appTitle">نظام إدارة المقاولات والديكور المتكامل</title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet" id="bootstrapCSS">
     <!-- FontAwesome Icons -->
@@ -58,18 +58,18 @@
                     <img id="loginCompanyLogo" src="" class="company-logo d-none" alt="Logo">
                 </div>
                 <h3 class="fw-bold mb-1" id="loginCompanyNameDisplay">منارة وادي العين</h3>
-                <p class="text-muted small mb-3">تسجيل الدخول للنظام الإداري</p>
+                <p class="text-muted small mb-3" data-lang="loginSubtitle">تسجيل الدخول للنظام الإداري</p>
                 
                 <div class="mb-3 text-start">
-                    <label class="form-label fw-bold">اسم المستخدم</label>
+                    <label class="form-label fw-bold" data-lang="usernameLabel">اسم المستخدم</label>
                     <input type="text" class="form-control" id="loginUsername" placeholder="أدخل اسم المستخدم هنا">
                 </div>
                 <div class="mb-3 text-start">
-                    <label class="form-label fw-bold">كلمة المرور</label>
+                    <label class="form-label fw-bold" data-lang="passwordLabel">كلمة المرور</label>
                     <input type="password" class="form-control" id="loginPassword" placeholder="أدخل كلمة المرور هنا">
                 </div>
                 
-                <button type="button" id="loginSubmitBtn" class="btn btn-primary w-100 py-2 fw-bold mb-2">تسجيل الدخول</button>
+                <button type="button" id="loginSubmitBtn" class="btn btn-primary w-100 py-2 fw-bold mb-2" data-lang="loginBtn">تسجيل الدخول</button>
             </div>
         </div>
     </div>
@@ -85,23 +85,23 @@
                 <div class="d-flex align-items-center gap-2">
                     <span id="syncStatus" class="text-info me-2"><i class="fas fa-check-circle me-1"></i> متصل</span>
                     <button class="btn btn-outline-light btn-sm lang-toggle-btn" type="button"><i class="fas fa-globe me-1"></i> <span class="lang-toggle-text">English</span></button>
-                    <button id="adminReportsBtn" class="btn btn-outline-info btn-sm"><i class="fas fa-chart-line me-1"></i> التقارير</button>
-                    <button id="adminUsersBtn" class="btn btn-outline-warning btn-sm"><i class="fas fa-cog me-1"></i> الإعدادات والمستخدمين</button>
-                    <button class="btn btn-outline-danger btn-sm" id="logoutBtn"><i class="fas fa-sign-out-alt me-1"></i> خروج</button>
+                    <button id="adminReportsBtn" class="btn btn-outline-info btn-sm"><i class="fas fa-chart-line me-1"></i> <span data-lang="reportsBtn">التقارير</span></button>
+                    <button id="adminUsersBtn" class="btn btn-outline-warning btn-sm"><i class="fas fa-cog me-1"></i> <span data-lang="settingsBtn">الإعدادات والمستخدمين</span></button>
+                    <button class="btn btn-outline-danger btn-sm" id="logoutBtn"><i class="fas fa-sign-out-alt me-1"></i> <span data-lang="logoutBtn">خروج</span></button>
                 </div>
             </div>
         </nav>
         <div class="container py-4">
-            <h3 class="text-center mb-4 fw-bold">اختر القسم للبدء</h3>
+            <h3 class="text-center mb-4 fw-bold" data-lang="chooseSection">اختر القسم للبدء</h3>
             <div class="row g-4 justify-content-center">
                 <div class="col-md-5" id="navContractingCard">
                     <div class="section-btn bg-contracting shadow" id="goToContracting">
-                        <i class="fas fa-city fa-2x mb-3"></i> <span>مقاولات البناء</span>
+                        <i class="fas fa-city fa-2x mb-3"></i> <span data-lang="contractingSec">مقاولات البناء</span>
                     </div>
                 </div>
                 <div class="col-md-5" id="navDecorCard">
                     <div class="section-btn bg-decor shadow" id="goToDecor">
-                        <i class="fas fa-paint-roller fa-2x mb-3"></i> <span>أعمال الديكور</span>
+                        <i class="fas fa-paint-roller fa-2x mb-3"></i> <span data-lang="decorSec">أعمال الديكور</span>
                     </div>
                 </div>
             </div>
@@ -449,8 +449,39 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxx5y5o7oZC9krmQn1WWm9kzRevoaHHdBOz_ssmY8wo6sXnD8GTurd1LhljbwjaCWz2/exec";
-        const CURRENT_APP_VERSION = "4.1-FIXED"; 
+        const CURRENT_APP_VERSION = "4.2-LANG-ACTIVATED"; 
         
+        let currentLang = localStorage.getItem('app_lang') || 'ar';
+
+        const translations = {
+            ar: {
+                appTitle: "نظام إدارة المقاولات والديكور المتكامل",
+                loginSubtitle: "تسجيل الدخول للنظام الإداري",
+                usernameLabel: "اسم المستخدم",
+                passwordLabel: "كلمة المرور",
+                loginBtn: "تسجيل الدخول",
+                reportsBtn: "التقارير",
+                settingsBtn: "الإعدادات والمستخدمين",
+                logoutBtn: "خروج",
+                chooseSection: "اختر القسم للبدء",
+                contractingSec: "مقاولات البناء",
+                decorSec: "أعمال الديكور"
+            },
+            en: {
+                appTitle: "Integrated Contracting & Decor Management System",
+                loginSubtitle: "Login to Administrative System",
+                usernameLabel: "Username",
+                passwordLabel: "Password",
+                loginBtn: "Login",
+                reportsBtn: "Reports",
+                settingsBtn: "Settings & Users",
+                logoutBtn: "Logout",
+                chooseSection: "Choose Section to Start",
+                contractingSec: "Building Contracting",
+                decorSec: "Decor Works"
+            }
+        };
+
         let dbData = {
             companyName: "منارة وادي العين",
             projects: [],
@@ -468,20 +499,15 @@
         document.addEventListener("DOMContentLoaded", function() {
             forceCleanBrowserCache();
             initLocalData();
+            applyLanguage(currentLang);
             
-            // إفراغ حقول تسجيل الدخول تأكيداً
             const uField = document.getElementById('loginUsername');
             const pField = document.getElementById('loginPassword');
             if(uField) uField.value = '';
             if(pField) pField.value = '';
 
-            // ربط زر تسجيل الدخول بشكل مباشر وآمن
             const loginBtn = document.getElementById('loginSubmitBtn');
-            if(loginBtn) {
-                loginBtn.onclick = function() {
-                    doLogin();
-                };
-            }
+            if(loginBtn) loginBtn.onclick = doLogin;
 
             const logoutBtn = document.getElementById('logoutBtn');
             if(logoutBtn) logoutBtn.onclick = doLogout;
@@ -499,7 +525,7 @@
             if(adminUsersBtn) adminUsersBtn.onclick = () => showPage('usersManagementPage');
             
             document.querySelectorAll('.lang-toggle-btn').forEach(btn => {
-                btn.onclick = () => alert('خاصية اللغة قيد التفعيل قريباً');
+                btn.onclick = toggleLanguage;
             });
 
             const backToMainFromReports = document.getElementById('backToMainFromReports');
@@ -562,10 +588,38 @@
             const sendWhatsAppBtn = document.getElementById('sendWhatsAppBtn');
             if(sendWhatsAppBtn) sendWhatsAppBtn.onclick = sendWhatsApp;
 
-            // فحص الجلسة السابقة بأمان
             checkSession();
             loadDataFromDrive();
         });
+
+        function toggleLanguage() {
+            currentLang = (currentLang === 'ar') ? 'en' : 'ar';
+            localStorage.setItem('app_lang', currentLang);
+            applyLanguage(currentLang);
+        }
+
+        function applyLanguage(lang) {
+            const htmlRoot = document.getElementById('htmlRoot');
+            const bootstrapCSS = document.getElementById('bootstrapCSS');
+
+            if(lang === 'en') {
+                htmlRoot.setAttribute('lang', 'en');
+                htmlRoot.setAttribute('dir', 'ltr');
+                bootstrapCSS.href = "https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css";
+                document.querySelectorAll('.lang-toggle-text').forEach(el => el.innerText = 'عربي');
+            } else {
+                htmlRoot.setAttribute('lang', 'ar');
+                htmlRoot.setAttribute('dir', 'rtl');
+                bootstrapCSS.href = "https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css";
+                document.querySelectorAll('.lang-toggle-text').forEach(el => el.innerText = 'English');
+            }
+
+            const t = translations[lang];
+            document.querySelectorAll('[data-lang]').forEach(el => {
+                const key = el.getAttribute('data-lang');
+                if(t[key]) el.innerText = t[key];
+            });
+        }
 
         function forceCleanBrowserCache() {
             const savedVersion = localStorage.getItem('app_system_version');
@@ -611,9 +665,7 @@
         function showPage(pageId) {
             document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
             const target = document.getElementById(pageId);
-            if(target) {
-                target.classList.add('active');
-            }
+            if(target) target.classList.add('active');
             
             if(pageId === 'contractingPage') renderProjects();
             if(pageId === 'usersManagementPage') renderUsersList();
@@ -625,7 +677,7 @@
             const pInput = document.getElementById('loginPassword').value.trim();
 
             if(!uInput || !pInput) {
-                alert('يرجى إدخال اسم المستخدم وكلمة المرور');
+                alert(currentLang === 'ar' ? 'يرجى إدخال اسم المستخدم وكلمة المرور' : 'Please enter username and password');
                 return;
             }
 
@@ -644,8 +696,6 @@
 
             localStorage.setItem('app_user', currentUser.username);
             applyUserPermissions();
-            
-            // الانتقال المباشر والحر إلى الصفحة الرئيسية
             showPage('mainPage');
         }
 
@@ -702,7 +752,7 @@
             dbData.companyName = val;
             renderCompanyTitles();
             saveDataToDrive();
-            alert('تم تحديث اسم الشركة بنجاح');
+            alert(currentLang === 'ar' ? 'تم تحديث اسم الشركة بنجاح' : 'Company name updated successfully');
         }
 
         function renderCompanyTitles() {
@@ -712,7 +762,7 @@
             const rComp = document.getElementById('reportCompanyTitle');
             const cInput = document.getElementById('companyNameInput');
 
-            if(hComp) hComp.innerHTML = `<i class="fas fa-hard-hat me-2"></i>${name} للمقاولات والديكور`;
+            if(hComp) hComp.innerHTML = `<i class="fas fa-hard-hat me-2"></i>${name}`;
             if(lComp) lComp.innerText = name;
             if(rComp) rComp.innerText = name;
             if(cInput) cInput.value = dbData.companyName || "";
@@ -774,7 +824,7 @@
             const price = parseFloat(document.getElementById('itemPrice').value) || 0;
 
             if(!desc || qty <= 0 || price <= 0) {
-                alert('يرجى تعبئة اسم المادة والكمية والسعر بشكل صحيح');
+                alert(currentLang === 'ar' ? 'يرجى تعبئة اسم المادة والكمية والسعر بشكل صحيح' : 'Please fill item name, quantity and price correctly');
                 return;
             }
 
@@ -821,7 +871,7 @@
             const notes = document.getElementById('decNotes').value || '-';
 
             if(!civilId) {
-                alert('⚠️ عذراً، الرقم المدني إلزامي! لا يمكن حفظ الفاتورة بدون إدخال الرقم المدني.');
+                alert(currentLang === 'ar' ? '⚠️ عذراً، الرقم المدني إلزامي!' : '⚠️ Sorry, Civil ID is required!');
                 return;
             }
 
@@ -829,7 +879,7 @@
             document.getElementById('viewCivilId').innerText = civilId;
             document.getElementById('viewClientPhone').innerText = phone;
             document.getElementById('viewNotes').innerText = notes;
-            document.getElementById('viewDate').innerText = new Date().toLocaleDateString('ar-EG');
+            document.getElementById('viewDate').innerText = new Date().toLocaleDateString();
 
             const viewBody = document.getElementById('viewDecorItemsBody');
             viewBody.innerHTML = '';
@@ -885,7 +935,7 @@
 
         function sendWhatsApp() {
             const phone = document.getElementById('decClientPhone').value;
-            if(!phone) { alert('يرجى إدخال رقم الهاتف أولاً'); return; }
+            if(!phone) { alert(currentLang === 'ar' ? 'يرجى إدخال رقم الهاتف أولاً' : 'Please enter phone number first'); return; }
             const clientName = document.getElementById('decClientName').value;
             const total = document.getElementById('viewTotal').innerText;
             const paid = document.getElementById('viewPaid').innerText;
@@ -893,10 +943,10 @@
 
             let itemsMsg = "";
             currentDecorItems.forEach((it, i) => {
-                itemsMsg += `\n ${i+1}. ${it.desc} - الكمية: ${it.qty} - المجموع: ${it.total} OMR`;
+                itemsMsg += `\n ${i+1}. ${it.desc} - Qty: ${it.qty} - Total: ${it.total} OMR`;
             });
 
-            const msg = `مرحباً بك ${clientName}، تفاصيل فاتورة الديكور الخاصة بك من (منارة وادي العين):\n${itemsMsg}\n\n- الإجمالي: ${total}\n- المدفوع: ${paid}\n- المتبقي: ${remaining}\n\nشكراً لتعاملك معنا!`;
+            const msg = `Hello ${clientName}, Decor invoice details:\n${itemsMsg}\n\n- Total: ${total}\n- Paid: ${paid}\n- Remaining: ${remaining}`;
             window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
         }
 
@@ -915,7 +965,7 @@
 
         function generateReports() {
             const dateValEl = document.getElementById('reportGenDateValue');
-            if(dateValEl) dateValEl.innerText = new Date().toLocaleDateString('ar-EG');
+            if(dateValEl) dateValEl.innerText = new Date().toLocaleDateString();
             
             const periodType = document.getElementById('reportPeriodType').value;
             const rangeLabel = document.getElementById('reportRangeLabel');
@@ -926,17 +976,17 @@
 
             if(periodType === 'daily') {
                 startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                if(rangeLabel) rangeLabel.innerText = "الفترة: تقرير يومي (اليوم)";
+                if(rangeLabel) rangeLabel.innerText = "Daily Report";
             } else if(periodType === 'weekly') {
                 startDate = new Date();
                 startDate.setDate(now.getDate() - 7);
-                if(rangeLabel) rangeLabel.innerText = "الفترة: تقرير أسبوعي (آخر 7 أيام)";
+                if(rangeLabel) rangeLabel.innerText = "Weekly Report";
             } else if(periodType === 'monthly') {
                 startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-                if(rangeLabel) rangeLabel.innerText = "الفترة: تقرير شهري (الشهر الحالي)";
+                if(rangeLabel) rangeLabel.innerText = "Monthly Report";
             } else if(periodType === 'yearly') {
                 startDate = new Date(now.getFullYear(), 0, 1);
-                if(rangeLabel) rangeLabel.innerText = "الفترة: تقرير سنوي (السنة الحالية)";
+                if(rangeLabel) rangeLabel.innerText = "Yearly Report";
             } else if(periodType === 'custom') {
                 const sInput = document.getElementById('reportStartDate').value;
                 const eInput = document.getElementById('reportEndDate').value;
@@ -945,9 +995,9 @@
                     endDate = new Date(eInput);
                     endDate.setHours(23, 59, 59);
                 }
-                if(rangeLabel) rangeLabel.innerText = `الفترة: من (${sInput || '-'}) إلى (${eInput || '-'})`;
+                if(rangeLabel) rangeLabel.innerText = `Custom Range`;
             } else {
-                if(rangeLabel) rangeLabel.innerText = "الفترة: التقرير الشامل (الكل)";
+                if(rangeLabel) rangeLabel.innerText = "Comprehensive Report (All)";
             }
 
             let totalContractingVal = 0;
@@ -1033,10 +1083,10 @@
         function addNewUser() {
             const u = document.getElementById('newUsername').value.trim();
             const p = document.getElementById('newPassword').value.trim();
-            if(!u || !p) { alert('يرجى كتابة اسم المستخدم وكلمة المرور'); return; }
+            if(!u || !p) { alert('Please enter username and password'); return; }
 
             if(dbData.users.find(item => item.username === u)) {
-                alert('اسم المستخدم موجود بالفعل'); return;
+                alert('Username already exists'); return;
             }
 
             dbData.users.push({
@@ -1055,8 +1105,8 @@
         }
 
         function deleteUser(username) {
-            if(username === 'admin') { alert('لا يمكن حذف حساب الآدمن الرئيسي'); return; }
-            if(confirm(`هل أنت متأكد من حذف المستخدم ${username}؟`)) {
+            if(username === 'admin') { alert('Cannot delete admin'); return; }
+            if(confirm(`Are you sure to delete user ${username}?`)) {
                 dbData.users = dbData.users.filter(u => u.username !== username);
                 saveDataToDrive();
                 renderUsersList();
@@ -1072,8 +1122,8 @@
                     <tr>
                         <td class="fw-bold">${u.username}</td>
                         <td><span class="badge ${u.role === 'admin' ? 'bg-danger' : 'bg-secondary'}">${u.role}</span></td>
-                        <td class="small">صلاحيات النظام</td>
-                        <td>${u.role !== 'admin' ? `<button type="button" class="btn btn-danger btn-sm" onclick="deleteUser('${u.username}')">حذف</button>` : '-'}</td>
+                        <td class="small">System Permissions</td>
+                        <td>${u.role !== 'admin' ? `<button type="button" class="btn btn-danger btn-sm" onclick="deleteUser('${u.username}')">Delete</button>` : '-'}</td>
                     </tr>
                 `;
             });
@@ -1099,7 +1149,7 @@
             }
 
             if(filtered.length === 0) {
-                list.innerHTML = '<div class="text-center text-muted py-4">لا توجد مشاريع مسجلة حالياً أو مطابقة للبحث.</div>';
+                list.innerHTML = '<div class="text-center text-muted py-4">No projects recorded.</div>';
                 return;
             }
 
@@ -1111,16 +1161,16 @@
                             <div class="d-flex justify-content-between align-items-center mb-1">
                                 <h5 class="fw-bold text-primary mb-0">${p.name}</h5>
                                 <div class="d-flex gap-1">
-                                    <button type="button" class="btn btn-sm btn-outline-warning py-0 px-2" onclick="editProject(${p.id})" title="تعديل"><i class="fas fa-edit"></i></button>
-                                    <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2" onclick="deleteProject(${p.id})" title="حذف"><i class="fas fa-trash"></i></button>
+                                    <button type="button" class="btn btn-sm btn-outline-warning py-0 px-2" onclick="editProject(${p.id})" title="Edit"><i class="fas fa-edit"></i></button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2" onclick="deleteProject(${p.id})" title="Delete"><i class="fas fa-trash"></i></button>
                                 </div>
                             </div>
-                            <p class="small text-muted mb-0">الرقم المدني: <strong class="text-dark">${p.civilId || 'غير مسجل'}</strong> | الهاتف: ${p.phone || '-'}</p>
+                            <p class="small text-muted mb-0">Civil ID: <strong class="text-dark">${p.civilId || '-'}</strong> | Phone: ${p.phone || '-'}</p>
                             <hr class="my-2">
-                            <p class="text-muted mb-1">الإجمالي: ${p.total} OMR</p>
-                            <p class="text-danger mb-1">المصروفات: ${totalExp} OMR</p>
-                            <p class="text-success mb-3 fw-bold">المتبقي: ${p.total - totalExp} OMR</p>
-                            <button type="button" class="btn btn-outline-primary btn-sm w-100" onclick="openProjectDetails(${p.id})">فتح وتفاصيل المواد</button>
+                            <p class="text-muted mb-1">Total: ${p.total} OMR</p>
+                            <p class="text-danger mb-1">Expenses: ${totalExp} OMR</p>
+                            <p class="text-success mb-3 fw-bold">Remaining: ${p.total - totalExp} OMR</p>
+                            <button type="button" class="btn btn-outline-primary btn-sm w-100" onclick="openProjectDetails(${p.id})">Open & Materials</button>
                         </div>
                     </div>
                 `;
@@ -1128,7 +1178,7 @@
         }
 
         function openAddProjectModal() {
-            document.getElementById('projectModalTitle').innerText = 'مشروع مقاولات جديد';
+            document.getElementById('projectModalTitle').innerText = 'New Contracting Project';
             document.getElementById('editingProjectId').value = '';
             document.getElementById('pName').value = '';
             document.getElementById('pCivilId').value = '';
@@ -1139,7 +1189,7 @@
         function editProject(id) {
             const p = dbData.projects.find(item => item.id === id);
             if(!p) return;
-            document.getElementById('projectModalTitle').innerText = 'تعديل بيانات المشروع';
+            document.getElementById('projectModalTitle').innerText = 'Edit Project';
             document.getElementById('editingProjectId').value = p.id;
             document.getElementById('pName').value = p.name || '';
             document.getElementById('pCivilId').value = p.civilId || '';
@@ -1161,7 +1211,7 @@
             const total = parseFloat(document.getElementById('pTotal').value);
             
             if(!name || !civilId || isNaN(total)) { 
-                alert('⚠️ عذراً، الرقم المدني إلزامي! يرجى إدخال اسم المشروع، الرقم المدني، والقيمة الإجمالية قبل الحفظ.'); 
+                alert('⚠️ Civil ID is required!'); 
                 return; 
             }
 
@@ -1187,8 +1237,77 @@
             }
         }
 
-     
-function deleteMaterial(mId) {
+        function deleteProject(id) {
+            if(confirm('Are you sure to delete this project?')) {
+                dbData.projects = dbData.projects.filter(item => item.id !== id);
+                saveDataToDrive();
+                renderProjects();
+            }
+        }
+
+        function openProjectDetails(id) {
+            activeProjectId = id;
+            const project = dbData.projects.find(p => p.id === id);
+            if(project) {
+                document.getElementById('currentProjectTitle').innerText = `Project: ${project.name} (Civil ID: ${project.civilId || '-'})`;
+            }
+            renderProjectStats();
+            showPage('projectDetailsPage');
+        }
+
+        function filterMaterials() {
+            const searchInput = document.getElementById('searchMaterialInput');
+            renderProjectStats(searchInput ? searchInput.value.toLowerCase() : "");
+        }
+
+        function renderProjectStats(query = "") {
+            const project = dbData.projects.find(p => p.id === activeProjectId);
+            if(!project) return;
+
+            let totalExp = project.materials ? project.materials.reduce((sum, m) => sum + m.cost, 0) : 0;
+            document.getElementById('projTotalCostVal').innerText = project.total + ' OMR';
+            document.getElementById('projTotalExpenses').innerText = totalExp + ' OMR';
+            document.getElementById('projRemainingCost').innerText = (project.total - totalExp) + ' OMR';
+
+            const table = document.getElementById('materialsTableBody');
+            if(!table) return;
+            table.innerHTML = '';
+            let mats = project.materials || [];
+            if(query) mats = mats.filter(m => m.name.toLowerCase().includes(query));
+
+            mats.forEach((m, idx) => {
+                table.innerHTML += `
+                    <tr>
+                        <td>${idx + 1}</td>
+                        <td>${m.name}</td>
+                        <td>${m.cost} OMR</td>
+                        <td>${m.date}</td>
+                        <td><button type="button" class="btn btn-danger btn-sm" onclick="deleteMaterial(${m.id})">Delete</button></td>
+                    </tr>
+                `;
+            });
+        }
+
+        function addNewMaterial() {
+            const name = document.getElementById('mName').value.trim();
+            const cost = parseFloat(document.getElementById('mCost').value) || 0;
+            const date = document.getElementById('mDate').value;
+            if(!name || isNaN(cost) || !date) { alert('Please fill material details'); return; }
+
+            const project = dbData.projects.find(p => p.id === activeProjectId);
+            if(!project.materials) project.materials = [];
+            project.materials.push({ id: Date.now(), name, cost, date });
+            saveDataToDrive();
+            renderProjectStats();
+            
+            const modalElement = document.getElementById('addMaterialModal');
+            if(modalElement) {
+                const modalInstance = bootstrap.Modal.getInstance(modalElement);
+                if(modalInstance) modalInstance.hide();
+            }
+        }
+
+        function deleteMaterial(mId) {
             const project = dbData.projects.find(p => p.id === activeProjectId);
             if(project) {
                 project.materials = project.materials.filter(m => m.id !== mId);
