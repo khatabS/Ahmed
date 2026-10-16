@@ -445,7 +445,9 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxx5y5o7oZC9krmQn1WWm9kzRevoaHHdBOz_ssmY8wo6sXnD8GTurd1LhljbwjaCWz2/exec";
-        const CURRENT_APP_VERSION = "3.2-CONNECTED"; 
+        
+        // إصدار جديد ومحدث لفرض التحديث ومسح الكاش العالق في الهواتف
+        const CURRENT_APP_VERSION = "3.3-MOBILE-FORCE"; 
         
         let dbData = {
             companyName: "منارة وادي العين",
@@ -502,29 +504,31 @@
             loadDataFromDrive();
         });
 
+        // دالة تنظيف الكاش القوية المخصصة لمنع بقاء المشاريع المحذوفة في الهواتف
         function checkAndCleanCache() {
             const savedVersion = localStorage.getItem('app_system_version');
             if (savedVersion !== CURRENT_APP_VERSION) {
-                let oldProjects = [];
-                let oldInvoices = [];
                 let oldLogo = "";
                 let oldName = "منارة وادي العين";
                 let oldUsers = [];
                 try {
                     const existing = JSON.parse(localStorage.getItem('app_system_db'));
                     if(existing) {
-                        oldProjects = existing.projects || [];
-                        oldInvoices = existing.decorInvoices || [];
                         oldLogo = existing.logo || "";
                         oldName = existing.companyName || "منارة وادي العين";
                         oldUsers = existing.users || [];
                     }
                 } catch(e) {}
 
+                // مسح الذاكرة القديمة بالكامل في الهواتف لإزالة المشاريع المحذوفة
+                localStorage.removeItem('app_system_db');
+                
+                // تحديث رقم الإصدار الجديد
                 localStorage.setItem('app_system_version', CURRENT_APP_VERSION);
                 
-                dbData.projects = oldProjects;
-                dbData.decorInvoices = oldInvoices;
+                // إعادة ضبط البيانات مع الحفاظ على الهوية والمستخدمين فقط وجلب الحذف الجديد من السحابة
+                dbData.projects = [];
+                dbData.decorInvoices = [];
                 dbData.logo = oldLogo;
                 dbData.companyName = oldName;
                 if(oldUsers.length > 0) dbData.users = oldUsers;
@@ -538,8 +542,8 @@
                 if (localSaved) {
                     const parsed = JSON.parse(localSaved);
                     if(parsed && typeof parsed === 'object') {
-                        if(parsed.projects && parsed.projects.length > 0) dbData.projects = parsed.projects;
-                        if(parsed.decorInvoices && parsed.decorInvoices.length > 0) dbData.decorInvoices = parsed.decorInvoices;
+                        if(parsed.projects && Array.isArray(parsed.projects)) dbData.projects = parsed.projects;
+                        if(parsed.decorInvoices && Array.isArray(parsed.decorInvoices)) dbData.decorInvoices = parsed.decorInvoices;
                         if(parsed.users && Array.isArray(parsed.users) && parsed.users.length > 0) dbData.users = parsed.users;
                         dbData.logo = parsed.logo || "";
                         dbData.companyName = parsed.companyName || "منارة وادي العين";
@@ -817,7 +821,7 @@
 
             let itemsMsg = "";
             currentDecorItems.forEach((it, i) => {
-                itemsMsg += `\n ${i+1}. ${it.desc} - الكمية: ${it.qty} - المجموع: ${it.total} OMR`;
+                itemsMsg += `\n ${i+1}.${it.desc} - الكمية: ${it.qty} - المجموع: ${it.total} OMR`;
             });
 
             const msg = `مرحباً بك ${clientName}، تفاصيل فاتورة الديكور الخاصة بك من (منارة وادي العين):\n${itemsMsg}\n\n- الإجمالي: ${total}\n- المدفوع: ${paid}\n- المتبقي: ${remaining}\n\nشكراً لتعاملك معنا!`;
@@ -867,7 +871,7 @@
                     endDate = new Date(eInput);
                     endDate.setHours(23, 59, 59);
                 }
-                rangeLabel.innerText = `الفترة: من (${sInput || '-'}) إلى (${eInput || '-'})`;
+                rangeLabel.innerText = `الفترة: من (${sInput \vert{}\vert{} '-'}) إلى (${eInput || '-'})`;
             } else {
                 rangeLabel.innerText = "الفترة: التقرير الشامل (الكل)";
             }
@@ -911,26 +915,19 @@
             document.getElementById('repDecorRemainingVal').innerText = (totalDecorVal - totalDecorPaid) + ' OMR';
         }
 
-        // تم تحديث دالة الاتصال لتتجاوز قيود المتصفح وتظهر Connected مباشرة
         function loadDataFromDrive() {
             const statusEl = document.getElementById('syncStatus');
-            
-            // استخدام طريقة آمنة لجلب البيانات تدعم CORS
             fetch(SCRIPT_URL, { method: 'GET', mode: 'cors' })
                 .then(res => res.json())
                 .catch(() => {
-                    // طريقة بديلة في حال قيود المتصفح الصارمة
                     return fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: 'getData' }) });
                 })
                 .then(data => {
                     if(data && typeof data === 'object') {
-                        if(data.projects && data.projects.length > 0) {
-                            const existingIds = new Set(dbData.projects.map(p => p.id));
-                            data.projects.forEach(p => {
-                                if(!existingIds.has(p.id)) dbData.projects.push(p);
-                            });
+                        if(data.projects && Array.isArray(data.projects)) {
+                            dbData.projects = data.projects; // جلب المشاريع الحالية المحدثة فقط من السحابة
                         }
-                        if(data.decorInvoices && data.decorInvoices.length > 0) {
+                        if(data.decorInvoices && Array.isArray(data.decorInvoices)) {
                             dbData.decorInvoices = data.decorInvoices;
                         }
                         if(data.users && Array.isArray(data.users) && data.users.length > 0) {
@@ -1043,7 +1040,7 @@
                                     <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2" onclick="deleteProject(${p.id})" title="حذف"><i class="fas fa-trash"></i></button>
                                 </div>
                             </div>
-                            <p class="small text-muted mb-0">الرقم المدني: <strong class="text-dark">${p.civilId || 'غير مسجل'}</strong> | الهاتف: ${p.phone || '-'}</p>
+                            <p class="small text-muted mb-0">الرقم المدني: <strong class="text-dark">${p.civilId \vert{}\vert{} 'غير مسجل'}</strong> \vert{} الهاتف: ${p.phone || '-'}</p>
                             <hr class="my-2">
                             <p class="text-muted mb-1">الإجمالي: ${p.total} OMR</p>
                             <p class="text-danger mb-1">المصروفات: ${totalExp} OMR</p>
@@ -1090,21 +1087,23 @@
                 return; 
             }
 
-            if(editingId) {
-                const p = dbData.projects.find(item => item.id == editingId);
-                if(p) {
-                    p.name = name;
-                    p.civilId = civilId;
-                    p.phone = phone;
-                    p.total = total;
+            (async () => {
+                if(editingId) {
+                    const p = dbData.projects.find(item => item.id == editingId);
+                    if(p) {
+                        p.name = name;
+                        p.civilId = civilId;
+                        p.phone = phone;
+                        p.total = total;
+                    }
+                } else {
+                    dbData.projects.push({ id: Date.now(), name, civilId, phone, total, materials: [] });
                 }
-            } else {
-                dbData.projects.push({ id: Date.now(), name, civilId, phone, total, materials: [] });
-            }
 
-            saveDataToDrive();
-            renderProjects();
-            bootstrap.Modal.getInstance(document.getElementById('newProjectModal')).hide();
+                await saveDataToDrive();
+                renderProjects();
+                bootstrap.Modal.getInstance(document.getElementById('newProjectModal')).hide();
+            })();
         }
 
         function deleteProject(id) {
@@ -1156,7 +1155,7 @@
 
         function addNewMaterial() {
             const name = document.getElementById('mName').value.trim();
-            const cost = parseFloat(document.getElementById('mCost').value);
+            const cost = parseFloat(document.getElementById('mCost`')) || 0;
             const date = document.getElementById('mDate').value;
             if(!name || isNaN(cost) || !date) { alert('يرجى تعبئة بيانات المادة كاملة'); return; }
 
