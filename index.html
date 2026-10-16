@@ -450,7 +450,9 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxx5y5o7oZC9krmQn1WWm9kzRevoaHHdBOz_ssmY8wo6sXnD8GTurd1LhljbwjaCWz2/exec";
-        const CURRENT_APP_VERSION = "2.9"; 
+        
+        // إصدار جديد ومحدث لإجبار المتصفحات العادية على تحديث الكاش تلقائياً
+        const CURRENT_APP_VERSION = "3.0-PRO"; 
         
         let dbData = {
             companyName: "منارة وادي العين",
@@ -506,26 +508,33 @@
             document.getElementById('sendWhatsAppBtn').addEventListener('click', sendWhatsApp);
         });
 
+        // دالة قوية لتطهير الذاكرة المؤقتة القديمة وإجبار تحميل النسخة الحديثة تلقائياً
         function checkAndCleanCache() {
             const savedVersion = localStorage.getItem('app_system_version');
             if (savedVersion !== CURRENT_APP_VERSION) {
                 let oldProjects = [];
                 let oldInvoices = [];
+                let oldLogo = "";
+                let oldName = "منارة وادي العين";
                 try {
                     const existing = JSON.parse(localStorage.getItem('app_system_db'));
                     if(existing) {
                         oldProjects = existing.projects || [];
                         oldInvoices = existing.decorInvoices || [];
+                        oldLogo = existing.logo || "";
+                        oldName = existing.companyName || "منارة وادي العين";
                     }
                 } catch(e) {}
 
+                // تحديث رقم الإصدار في المتصفح
                 localStorage.setItem('app_system_version', CURRENT_APP_VERSION);
                 
-                if(oldProjects.length > 0 || oldInvoices.length > 0) {
-                    dbData.projects = oldProjects;
-                    dbData.decorInvoices = oldInvoices;
-                    localStorage.setItem('app_system_db', JSON.stringify(dbData));
-                }
+                // إعادة تهيئة قاعدة البيانات المحلية مع الحفاظ التام على بيانات الزبون وشعاره
+                dbData.projects = oldProjects;
+                dbData.decorInvoices = oldInvoices;
+                dbData.logo = oldLogo;
+                dbData.companyName = oldName;
+                localStorage.setItem('app_system_db', JSON.stringify(dbData));
             }
         }
 
@@ -666,7 +675,6 @@
             const pLogo = document.getElementById('logoPreview');
             const noLogoText = document.getElementById('noLogoText');
             
-            // عناصر الشعار في فاتورة الديكور
             const invoiceLogoImg = document.getElementById('invoiceLogoDisplay');
             const invoicePlaceholder = document.getElementById('invoiceLogoPlaceholder');
 
@@ -677,7 +685,6 @@
                 if(pLogo) { pLogo.src = logoSrc; pLogo.classList.remove('d-none'); }
                 if(noLogoText) noLogoText.classList.add('d-none');
 
-                // تحديث شعار فاتورة الديكور تلقائياً
                 if(invoiceLogoImg) { invoiceLogoImg.src = logoSrc; invoiceLogoImg.classList.remove('d-none'); }
                 if(invoicePlaceholder) invoicePlaceholder.classList.add('d-none');
             } else {
@@ -687,7 +694,6 @@
                 if(pLogo) pLogo.classList.add('d-none');
                 if(noLogoText) noLogoText.classList.remove('d-none');
 
-                // إرجاع النص الافتراضي في فاتورة الديكور إذا لم يوجد شعار
                 if(invoiceLogoImg) invoiceLogoImg.classList.add('d-none');
                 if(invoicePlaceholder) invoicePlaceholder.classList.remove('d-none');
             }
@@ -929,7 +935,7 @@
                         if(data.users && Array.isArray(data.users) && data.users.length > 0) {
                             dbData.users = data.users;
                         }
-                        if(data.logo !== undefined) dbData.logo = data.logo;
+                        if(data.logo !== undefined && data.logo !== "") dbData.logo = data.logo;
                         if(data.companyName) dbData.companyName = data.companyName;
                     }
                     localStorage.setItem('app_system_db', JSON.stringify(dbData));
@@ -1162,11 +1168,4 @@
         }
 
         function deleteMaterial(mId) {
-            const project = dbData.projects.find(p => p.id === activeProjectId);
-            project.materials = project.materials.filter(m => m.id !== mId);
-            saveDataToDrive();
-            renderProjectStats();
-        }
-    </script>
-</body>
-</html>
+      
