@@ -449,7 +449,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxx5y5o7oZC9krmQn1WWm9kzRevoaHHdBOz_ssmY8wo6sXnD8GTurd1LhljbwjaCWz2/exec";
-        const CURRENT_APP_VERSION = "4.0-FORCE-RELOAD"; 
+        const CURRENT_APP_VERSION = "4.1-FIXED"; 
         
         let dbData = {
             companyName: "منارة وادي العين",
@@ -468,49 +468,102 @@
         document.addEventListener("DOMContentLoaded", function() {
             forceCleanBrowserCache();
             initLocalData();
-            checkSession();
-
+            
             // إفراغ حقول تسجيل الدخول تأكيداً
-            document.getElementById('loginUsername').value = '';
-            document.getElementById('loginPassword').value = '';
+            const uField = document.getElementById('loginUsername');
+            const pField = document.getElementById('loginPassword');
+            if(uField) uField.value = '';
+            if(pField) pField.value = '';
 
-            document.getElementById('loginSubmitBtn').addEventListener('click', doLogin);
-            document.getElementById('logoutBtn').addEventListener('click', doLogout);
-            document.getElementById('goToContracting').addEventListener('click', () => showPage('contractingPage'));
-            document.getElementById('goToDecor').addEventListener('click', () => showPage('decorPage'));
-            document.getElementById('adminReportsBtn').addEventListener('click', () => showPage('reportsPage'));
-            document.getElementById('adminUsersBtn').addEventListener('click', () => showPage('usersManagementPage'));
+            // ربط زر تسجيل الدخول بشكل مباشر وآمن
+            const loginBtn = document.getElementById('loginSubmitBtn');
+            if(loginBtn) {
+                loginBtn.onclick = function() {
+                    doLogin();
+                };
+            }
+
+            const logoutBtn = document.getElementById('logoutBtn');
+            if(logoutBtn) logoutBtn.onclick = doLogout;
+
+            const goToContracting = document.getElementById('goToContracting');
+            if(goToContracting) goToContracting.onclick = () => showPage('contractingPage');
+
+            const goToDecor = document.getElementById('goToDecor');
+            if(goToDecor) goToDecor.onclick = () => showPage('decorPage');
+
+            const adminReportsBtn = document.getElementById('adminReportsBtn');
+            if(adminReportsBtn) adminReportsBtn.onclick = () => showPage('reportsPage');
+
+            const adminUsersBtn = document.getElementById('adminUsersBtn');
+            if(adminUsersBtn) adminUsersBtn.onclick = () => showPage('usersManagementPage');
             
             document.querySelectorAll('.lang-toggle-btn').forEach(btn => {
-                btn.addEventListener('click', () => alert('خاصية اللغة قيد التفعيل قريباً'));
+                btn.onclick = () => alert('خاصية اللغة قيد التفعيل قريباً');
             });
 
-            document.getElementById('backToMainFromReports').addEventListener('click', () => showPage('mainPage'));
-            document.getElementById('backToMainFromSettings').addEventListener('click', () => showPage('mainPage'));
-            document.getElementById('backToMainFromContracting').addEventListener('click', () => showPage('mainPage'));
-            document.getElementById('backToContractingFromDetails').addEventListener('click', () => showPage('contractingPage'));
-            document.getElementById('backToMainFromDecor').addEventListener('click', () => showPage('mainPage'));
+            const backToMainFromReports = document.getElementById('backToMainFromReports');
+            if(backToMainFromReports) backToMainFromReports.onclick = () => showPage('mainPage');
 
-            document.getElementById('applyReportFilter').addEventListener('click', generateReports);
-            document.getElementById('reportPeriodType').addEventListener('change', handlePeriodTypeChange);
+            const backToMainFromSettings = document.getElementById('backToMainFromSettings');
+            if(backToMainFromSettings) backToMainFromSettings.onclick = () => showPage('mainPage');
+
+            const backToMainFromContracting = document.getElementById('backToMainFromContracting');
+            if(backToMainFromContracting) backToMainFromContracting.onclick = () => showPage('mainPage');
+
+            const backToContractingFromDetails = document.getElementById('backToContractingFromDetails');
+            if(backToContractingFromDetails) backToContractingFromDetails.onclick = () => showPage('contractingPage');
+
+            const backToMainFromDecor = document.getElementById('backToMainFromDecor');
+            if(backToMainFromDecor) backToMainFromDecor.onclick = () => showPage('mainPage');
+
+            const applyReportFilter = document.getElementById('applyReportFilter');
+            if(applyReportFilter) applyReportFilter.onclick = generateReports;
+
+            const reportPeriodType = document.getElementById('reportPeriodType');
+            if(reportPeriodType) reportPeriodType.onchange = handlePeriodTypeChange;
             
-            document.getElementById('saveCompanyNameBtn').addEventListener('click', saveCompanyName);
-            document.getElementById('logoInput').addEventListener('change', previewAndSaveLogo);
-            document.getElementById('removeLogoBtn').addEventListener('click', removeLogo);
-            document.getElementById('saveNewUserBtn').addEventListener('click', addNewUser);
+            const saveCompanyNameBtn = document.getElementById('saveCompanyNameBtn');
+            if(saveCompanyNameBtn) saveCompanyNameBtn.onclick = saveCompanyName;
 
-            document.getElementById('searchProjectInput').addEventListener('keyup', filterProjects);
-            document.getElementById('refreshProjectsBtn').addEventListener('click', loadDataFromDrive);
-            document.getElementById('saveProjectBtn').addEventListener('click', saveProject);
+            const logoInput = document.getElementById('logoInput');
+            if(logoInput) logoInput.onchange = previewAndSaveLogo;
 
-            document.getElementById('searchMaterialInput').addEventListener('keyup', filterMaterials);
-            document.getElementById('saveMaterialBtn').addEventListener('click', addNewMaterial);
+            const removeLogoBtn = document.getElementById('removeLogoBtn');
+            if(removeLogoBtn) removeLogoBtn.onclick = removeLogo;
 
-            document.getElementById('addDecorItemBtn').addEventListener('click', addDecorItem);
-            document.getElementById('updateDecorInvoiceBtn').addEventListener('click', generateDecorInvoice);
-            document.getElementById('decPaid').addEventListener('input', generateDecorInvoice);
-            document.getElementById('sendWhatsAppBtn').addEventListener('click', sendWhatsApp);
+            const saveNewUserBtn = document.getElementById('saveNewUserBtn');
+            if(saveNewUserBtn) saveNewUserBtn.onclick = addNewUser;
 
+            const searchProjectInput = document.getElementById('searchProjectInput');
+            if(searchProjectInput) searchProjectInput.onkeyup = filterProjects;
+
+            const refreshProjectsBtn = document.getElementById('refreshProjectsBtn');
+            if(refreshProjectsBtn) refreshProjectsBtn.onclick = loadDataFromDrive;
+
+            const saveProjectBtn = document.getElementById('saveProjectBtn');
+            if(saveProjectBtn) saveProjectBtn.onclick = saveProject;
+
+            const searchMaterialInput = document.getElementById('searchMaterialInput');
+            if(searchMaterialInput) searchMaterialInput.onkeyup = filterMaterials;
+
+            const saveMaterialBtn = document.getElementById('saveMaterialBtn');
+            if(saveMaterialBtn) saveMaterialBtn.onclick = addNewMaterial;
+
+            const addDecorItemBtn = document.getElementById('addDecorItemBtn');
+            if(addDecorItemBtn) addDecorItemBtn.onclick = addDecorItem;
+
+            const updateDecorInvoiceBtn = document.getElementById('updateDecorInvoiceBtn');
+            if(updateDecorInvoiceBtn) updateDecorInvoiceBtn.onclick = generateDecorInvoice;
+
+            const decPaid = document.getElementById('decPaid');
+            if(decPaid) decPaid.oninput = generateDecorInvoice;
+
+            const sendWhatsAppBtn = document.getElementById('sendWhatsAppBtn');
+            if(sendWhatsAppBtn) sendWhatsAppBtn.onclick = sendWhatsApp;
+
+            // فحص الجلسة السابقة بأمان
+            checkSession();
             loadDataFromDrive();
         });
 
@@ -529,7 +582,6 @@
                     }
                 } catch(e) {}
 
-                // تفريغ الجلسة القديمة المعلقة لضمان استجابة زر الدخول
                 localStorage.removeItem('app_user');
                 localStorage.setItem('app_system_version', CURRENT_APP_VERSION);
                 
@@ -592,14 +644,18 @@
 
             localStorage.setItem('app_user', currentUser.username);
             applyUserPermissions();
+            
+            // الانتقال المباشر والحر إلى الصفحة الرئيسية
             showPage('mainPage');
         }
 
         function doLogout() {
             localStorage.removeItem('app_user');
             currentUser = null;
-            document.getElementById('loginUsername').value = '';
-            document.getElementById('loginPassword').value = '';
+            const uField = document.getElementById('loginUsername');
+            const pField = document.getElementById('loginPassword');
+            if(uField) uField.value = '';
+            if(pField) pField.value = '';
             showPage('loginPage');
         }
 
@@ -631,8 +687,10 @@
                 if(reportsBtn) reportsBtn.classList.add('d-none');
             }
 
-            document.getElementById('navContractingCard').style.display = (currentUser.perms && currentUser.perms.contracting) ? 'block' : 'none';
-            document.getElementById('navDecorCard').style.display = (currentUser.perms && currentUser.perms.decor) ? 'block' : 'none';
+            const navC = document.getElementById('navContractingCard');
+            const navD = document.getElementById('navDecorCard');
+            if(navC) navC.style.display = (currentUser.perms && currentUser.perms.contracting) ? 'block' : 'none';
+            if(navD) navD.style.display = (currentUser.perms && currentUser.perms.decor) ? 'block' : 'none';
 
             renderLogo();
             renderCompanyTitles();
@@ -649,10 +707,15 @@
 
         function renderCompanyTitles() {
             const name = dbData.companyName || "منارة وادي العين";
-            document.getElementById('headerCompanyName').innerHTML = `<i class="fas fa-hard-hat me-2"></i>${name} للمقاولات والديكور`;
-            document.getElementById('loginCompanyNameDisplay').innerText = name;
-            document.getElementById('reportCompanyTitle').innerText = name;
-            document.getElementById('companyNameInput').value = dbData.companyName || "";
+            const hComp = document.getElementById('headerCompanyName');
+            const lComp = document.getElementById('loginCompanyNameDisplay');
+            const rComp = document.getElementById('reportCompanyTitle');
+            const cInput = document.getElementById('companyNameInput');
+
+            if(hComp) hComp.innerHTML = `<i class="fas fa-hard-hat me-2"></i>${name} للمقاولات والديكور`;
+            if(lComp) lComp.innerText = name;
+            if(rComp) rComp.innerText = name;
+            if(cInput) cInput.value = dbData.companyName || "";
         }
 
         function previewAndSaveLogo(event) {
@@ -734,6 +797,7 @@
 
         function renderDecorItemsInputTable() {
             const tbody = document.getElementById('decorItemsInputTable');
+            if(!tbody) return;
             tbody.innerHTML = '';
             currentDecorItems.forEach((item, index) => {
                 tbody.innerHTML += `
@@ -850,7 +914,9 @@
         }
 
         function generateReports() {
-            document.getElementById('reportGenDateValue').innerText = new Date().toLocaleDateString('ar-EG');
+            const dateValEl = document.getElementById('reportGenDateValue');
+            if(dateValEl) dateValEl.innerText = new Date().toLocaleDateString('ar-EG');
+            
             const periodType = document.getElementById('reportPeriodType').value;
             const rangeLabel = document.getElementById('reportRangeLabel');
             
@@ -860,17 +926,17 @@
 
             if(periodType === 'daily') {
                 startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                rangeLabel.innerText = "الفترة: تقرير يومي (اليوم)";
+                if(rangeLabel) rangeLabel.innerText = "الفترة: تقرير يومي (اليوم)";
             } else if(periodType === 'weekly') {
                 startDate = new Date();
                 startDate.setDate(now.getDate() - 7);
-                rangeLabel.innerText = "الفترة: تقرير أسبوعي (آخر 7 أيام)";
+                if(rangeLabel) rangeLabel.innerText = "الفترة: تقرير أسبوعي (آخر 7 أيام)";
             } else if(periodType === 'monthly') {
                 startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-                rangeLabel.innerText = "الفترة: تقرير شهري (الشهر الحالي)";
+                if(rangeLabel) rangeLabel.innerText = "الفترة: تقرير شهري (الشهر الحالي)";
             } else if(periodType === 'yearly') {
                 startDate = new Date(now.getFullYear(), 0, 1);
-                rangeLabel.innerText = "الفترة: تقرير سنوي (السنة الحالية)";
+                if(rangeLabel) rangeLabel.innerText = "الفترة: تقرير سنوي (السنة الحالية)";
             } else if(periodType === 'custom') {
                 const sInput = document.getElementById('reportStartDate').value;
                 const eInput = document.getElementById('reportEndDate').value;
@@ -879,9 +945,9 @@
                     endDate = new Date(eInput);
                     endDate.setHours(23, 59, 59);
                 }
-                rangeLabel.innerText = `الفترة: من (${sInput || '-'}) إلى (${eInput || '-'})`;
+                if(rangeLabel) rangeLabel.innerText = `الفترة: من (${sInput || '-'}) إلى (${eInput || '-'})`;
             } else {
-                rangeLabel.innerText = "الفترة: التقرير الشامل (الكل)";
+                if(rangeLabel) rangeLabel.innerText = "الفترة: التقرير الشامل (الكل)";
             }
 
             let totalContractingVal = 0;
@@ -1014,7 +1080,8 @@
         }
 
         function filterProjects() {
-            renderProjects(document.getElementById('searchProjectInput').value.toLowerCase());
+            const searchInput = document.getElementById('searchProjectInput');
+            renderProjects(searchInput ? searchInput.value.toLowerCase() : "");
         }
 
         function renderProjects(query = "") {
@@ -1079,8 +1146,11 @@
             document.getElementById('pPhone').value = p.phone || '';
             document.getElementById('pTotal').value = p.total || 0;
             
-            const modal = new bootstrap.Modal(document.getElementById('newProjectModal'));
-            modal.show();
+            const modalElement = document.getElementById('newProjectModal');
+            if(modalElement) {
+                const modal = new bootstrap.Modal(modalElement);
+                modal.show();
+            }
         }
 
         function saveProject() {
@@ -1088,7 +1158,7 @@
             const name = document.getElementById('pName').value.trim();
             const civilId = document.getElementById('pCivilId').value.trim();
             const phone = document.getElementById('pPhone').value.trim();
-            const total = parseFloat(document.getElementById('pTotal.value') || document.getElementById('pTotal').value);
+            const total = parseFloat(document.getElementById('pTotal').value);
             
             if(!name || !civilId || isNaN(total)) { 
                 alert('⚠️ عذراً، الرقم المدني إلزامي! يرجى إدخال اسم المشروع، الرقم المدني، والقيمة الإجمالية قبل الحفظ.'); 
@@ -1109,62 +1179,12 @@
 
             saveDataToDrive();
             renderProjects();
-            bootstrap.Modal.getInstance(document.getElementById('newProjectModal')).hide();
-        }
-
-        function deleteProject(id) {
-            if(confirm('هل أنت متأكد من حذف هذا المشروع نهائياً؟')) {
-                dbData.projects = dbData.projects.filter(item => item.id !== id);
-                saveDataToDrive();
-                renderProjects();
+            
+            const modalElement = document.getElementById('newProjectModal');
+            if(modalElement) {
+                const modalInstance = bootstrap.Modal.getInstance(modalElement);
+                if(modalInstance) modalInstance.hide();
             }
         }
 
-        function openProjectDetails(id) {
-            activeProjectId = id;
-            const project = dbData.projects.find(p => p.id === id);
-            document.getElementById('currentProjectTitle').innerText = `مشروع: ${project.name} (المدني: ${project.civilId || '-'})`;
-            renderProjectStats();
-            showPage('projectDetailsPage');
-        }
-
-        function filterMaterials() {
-            renderProjectStats(document.getElementById('searchMaterialInput').value.toLowerCase());
-        }
-
-        function renderProjectStats(query = "") {
-            const project = dbData.projects.find(p => p.id === activeProjectId);
-            if(!project) return;
-
-            let totalExp = project.materials ? project.materials.reduce((sum, m) => sum + m.cost, 0) : 0;
-            document.getElementById('projTotalCostVal').innerText = project.total + ' OMR';
-            document.getElementById('projTotalExpenses').innerText = totalExp + ' OMR';
-            document.getElementById('projRemainingCost').innerText = (project.total - totalExp) + ' OMR';
-
-            const table = document.getElementById('materialsTableBody');
-            table.innerHTML = '';
-            let mats = project.materials || [];
-            if(query) mats = mats.filter(m => m.name.toLowerCase().includes(query));
-
-            mats.forEach((m, idx) => {
-                table.innerHTML += `
-                    <tr>
-                        <td>${idx + 1}</td>
-                        <td>${m.name}</td>
-                        <td>${m.cost} OMR</td>
-                        <td>${m.date}</td>
-                        <td><button type="button" class="btn btn-danger btn-sm" onclick="deleteMaterial(${m.id})">حذف</button></td>
-                    </tr>
-                `;
-            });
-        }
-
-        function addNewMaterial() {
-            const name = document.getElementById('mName').value.trim();
-            const cost = parseFloat(document.getElementById('mCost').value) || 0;
-            const date = document.getElementById('mDate').value;
-            if(!name || isNaN(cost) || !date) { alert('يرجى تعبئة بيانات المادة كاملة'); return; }
-
-            const project = dbData.projects.find(p => p.id === activeProjectId);
-            if(!project.materials) project.materials = [];
-            project.materials.push({ id: Date.now(), name, cost, date 
+     
