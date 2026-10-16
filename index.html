@@ -1188,3 +1188,14 @@
         }
 
      
+function deleteMaterial(mId) {
+            const project = dbData.projects.find(p => p.id === activeProjectId);
+            if(project) {
+                project.materials = project.materials.filter(m => m.id !== mId);
+                saveDataToDrive();
+                renderProjectStats();
+            }
+        }
+    </script>
+</body>
+</html>
