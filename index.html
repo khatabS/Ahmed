@@ -449,7 +449,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxx5y5o7oZC9krmQn1WWm9kzRevoaHHdBOz_ssmY8wo6sXnD8GTurd1LhljbwjaCWz2/exec";
-        const CURRENT_APP_VERSION = "4.6-RESTORE-FIX"; 
+        const CURRENT_APP_VERSION = "4.8-SYNC-SPEED-FIX"; 
         
         let currentLang = localStorage.getItem('app_lang') || 'ar';
 
@@ -497,7 +497,7 @@
         let currentDecorItems = [];
 
         document.addEventListener("DOMContentLoaded", function() {
-            forceCleanBrowserCache();
+            checkAndClear();
             initLocalData();
             applyLanguage(currentLang);
             
@@ -564,7 +564,7 @@
             const searchProjectInput = document.getElementById('searchProjectInput');
             if(searchProjectInput) searchProjectInput.onkeyup = filterProjects;
 
-            // زر التحديث الفوري المضمون بمعالجة آمنة
+            // زر التحديث الفوري المضمون مع Force Reload لتجاوز الكاش السحابي والمحلي
             const refreshProjectsBtn = document.getElementById('refreshProjectsBtn');
             if(refreshProjectsBtn) {
                 refreshProjectsBtn.onclick = function() {
@@ -625,7 +625,7 @@
             });
         }
 
-        function forceCleanBrowserCache() {
+        function checkAndClear() {
             const savedVersion = localStorage.getItem('app_system_version');
             if (savedVersion !== CURRENT_APP_VERSION) {
                 let oldLogo = "";
@@ -1051,11 +1051,13 @@
 
         function saveDataToDrive() {
             localStorage.setItem('app_system_db', JSON.stringify(dbData));
+            // إضافة الطابع الزمني لضمان عدم حدوث كاش سحابي وتسريع الاستجابة بين الأجهزة
+            const syncPayload = Object.assign({}, dbData, { _timestamp: Date.now() });
             fetch(SCRIPT_URL, {
                 method: 'POST',
                 mode: 'no-cors',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(dbData)
+                body: JSON.stringify(syncPayload)
             }).catch(() => {});
         }
 
@@ -1246,7 +1248,7 @@
             let totalExp = project.materials ? project.materials.reduce((sum, m) => sum + m.cost, 0) : 0;
             document.getElementById('projTotalCostVal').innerText = project.total + ' OMR';
             document.getElementById('projTotalExpenses').innerText = totalExp + ' OMR';
-            document.getElementById('projRemainingCost').innerText, (project.total - totalExp) + ' OMR';
+            document.getElementById('projRemainingCost').innerText = (project.total - totalExp) + ' OMR';
 
             const table = document.getElementById('materialsTableBody');
             if(!table) return;
