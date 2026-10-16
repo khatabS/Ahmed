@@ -449,7 +449,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxx5y5o7oZC9krmQn1WWm9kzRevoaHHdBOz_ssmY8wo6sXnD8GTurd1LhljbwjaCWz2/exec";
-        const CURRENT_APP_VERSION = "4.5-FINAL-REFRESH"; 
+        const CURRENT_APP_VERSION = "4.6-RESTORE-FIX"; 
         
         let currentLang = localStorage.getItem('app_lang') || 'ar';
 
@@ -564,7 +564,7 @@
             const searchProjectInput = document.getElementById('searchProjectInput');
             if(searchProjectInput) searchProjectInput.onkeyup = filterProjects;
 
-            // زر التحديث الفوري المضمون (إعادة تحميل الصفحة لتحديث السحابة بصرياً)
+            // زر التحديث الفوري المضمون بمعالجة آمنة
             const refreshProjectsBtn = document.getElementById('refreshProjectsBtn');
             if(refreshProjectsBtn) {
                 refreshProjectsBtn.onclick = function() {
@@ -594,7 +594,6 @@
             if(sendWhatsAppBtn) sendWhatsAppBtn.onclick = sendWhatsApp;
 
             checkSession();
-            loadDataFromDrive();
         });
 
         function toggleLanguage() {
@@ -632,21 +631,27 @@
                 let oldLogo = "";
                 let oldName = "منارة وادي العين";
                 let oldUsers = [];
+                let oldProjects = [];
+                let oldDecor = [];
                 try {
                     const existing = JSON.parse(localStorage.getItem('app_system_db'));
                     if(existing) {
                         oldLogo = existing.logo || "";
                         oldName = existing.companyName || "منارة وادي العين";
                         oldUsers = existing.users || [];
+                        oldProjects = existing.projects || [];
+                        oldDecor = existing.decorInvoices || [];
                     }
                 } catch(e) {}
 
-                localStorage.removeItem('app_user');
                 localStorage.setItem('app_system_version', CURRENT_APP_VERSION);
                 
                 dbData.logo = oldLogo;
                 dbData.companyName = oldName;
                 if(oldUsers.length > 0) dbData.users = oldUsers;
+                if(oldProjects.length > 0) dbData.projects = oldProjects;
+                if(oldDecor.length > 0) dbData.decorInvoices = oldDecor;
+                
                 localStorage.setItem('app_system_db', JSON.stringify(dbData));
             }
         }
@@ -1044,13 +1049,6 @@
             document.getElementById('repDecorRemainingVal').innerText = (totalDecorVal - totalDecorPaid) + ' OMR';
         }
 
-        function loadDataFromDrive() {
-            const statusEl = document.getElementById('syncStatus');
-            if(statusEl) statusEl.innerHTML = '<i class="fas fa-check-circle me-1"></i> ' + (currentLang === 'ar' ? 'متصل' : 'Connected');
-            renderProjects();
-            renderLogo();
-        }
-
         function saveDataToDrive() {
             localStorage.setItem('app_system_db', JSON.stringify(dbData));
             fetch(SCRIPT_URL, {
@@ -1248,7 +1246,7 @@
             let totalExp = project.materials ? project.materials.reduce((sum, m) => sum + m.cost, 0) : 0;
             document.getElementById('projTotalCostVal').innerText = project.total + ' OMR';
             document.getElementById('projTotalExpenses').innerText = totalExp + ' OMR';
-            document.getElementById('projRemainingCost').innerText = (project.total - totalExp) + ' OMR';
+            document.getElementById('projRemainingCost').innerText, (project.total - totalExp) + ' OMR';
 
             const table = document.getElementById('materialsTableBody');
             if(!table) return;
